@@ -1,4 +1,4 @@
-# MEI - Sistema Inteligente (Frontend)
+# MEI - Sistema Inteligente (Backend)
 
 Desktop application to follow a process of collaborative teamwork and face-to-face dialogue following the Interpretative Structural Modeling algorithm by John Warfield.
 
