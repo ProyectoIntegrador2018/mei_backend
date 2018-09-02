@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Hello World!</title>
+    </head>
+    <body>
+      <h1 id="title">Hello World!</h1>
+
+    <!-- https://stackoverflow.com/questions/32621988/electron-jquery-is-not-defined -->
+      <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+      <!-- normal script imports etc  -->
+      <script src="./js/jquery.js"></script> 
+      <script type="text/javascript" src="js/testscript.js"></script>
+
+      <!-- Insert this line after script imports -->
+      <script>if (window.module) module = window.module;</script>
+    </body>
+  </html>
