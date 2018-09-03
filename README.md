@@ -57,7 +57,7 @@ $ pip install --user python-dotenv
 ```bash
 $ pip install --user Flask
 ```
-* [Firebase credentials]<br/>
+* Firebase credentials<br/>
 Go to your [Firebase console](https://console.firebase.google.com) and navigate to your [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk) tab.<br/>
 Click on the 'Generate New Private Key' button and a .json will be downloaded.
 
