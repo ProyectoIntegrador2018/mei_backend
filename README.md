@@ -45,10 +45,6 @@ Desktop application to follow a process of collaborative teamwork and face-to-fa
 ### Requirements
 * [pip](https://pip.pypa.io/en/stable/installing/)<br/>
 pip is already installed if you are using Python 2 >=2.7.9 or Python 3 >=3.4 downloaded from python.org.
-* [firebase-admin](https://firebase.google.com/docs/admin/setup)
-```bash
-$ pip install --user firebase-admin
-```
 * [python-dotenv](https://github.com/theskumar/python-dotenv)
 ```bash
 $ pip install --user python-dotenv
@@ -57,16 +53,17 @@ $ pip install --user python-dotenv
 ```bash
 $ pip install --user Flask
 ```
-* Firebase credentials<br/>
-Go to your [Firebase console](https://console.firebase.google.com) and navigate to your [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk) tab.<br/>
-Click on the 'Generate New Private Key' button and a .json will be downloaded.
+* [flask-mysql](https://firebase.google.com/docs/admin/setup)
+```bash
+$ pip install --user flask-mysql
+```
 
 ### Setup the project
 
 1. Clone this repository into your local machine
 
 ```bash
-$ git git@github.com:ProyectoIntegrador2018/mei_backend.git
+$ git clone git@github.com:ProyectoIntegrador2018/mei_backend.git
 ```
 
 2. Step into the ElectronFlaskTest directory
@@ -74,35 +71,19 @@ $ git git@github.com:ProyectoIntegrador2018/mei_backend.git
 $ cd ElectronFlaskTest
 ```
 
-3. Set the FLASK_APP environment variable
-
-#### OSX
-```bash
-$ export FLASK_APP=hello.py
+3. Create a file called `.env` inside the ElectronFlaskTest directory and fill it with the following environment variables set to the MySQL configuration of your liking.
 ```
-
-#### Windows
-```bash
-$ set FLASK_APP=hello.py
+MYSQL_DATABASE_USER=example
+MYSQL_DATABASE_PASSWORD=example
+MYSQL_DATABASE_DB=example
+MYSQL_DATABASE_HOST=example
 ```
-
-4. Create a file called `.env` inside the ElectronFlaskTest directory and fill it with the following environment variables from the Firebase credentials `.json` you downloaded during the setup.
-```
-TYPE = example
-PROJECT_ID = example
-CLIENT_EMAIL = example
-TOKEN_URI = example
-DATABASE_URL = example
-PRIVATE_KEY = "example"
-```
-
-Note: Only the `PRIVATE_KEY` variable requires quotes.
 
 ### Running the Flask server
 
 1. Start the server
 ```bash
-$ flask run
+$ python hello.py
 ```
 
 You should see the following output:
