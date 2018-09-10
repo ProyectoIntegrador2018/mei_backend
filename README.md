@@ -53,9 +53,17 @@ $ pip install --user python-dotenv
 ```bash
 $ pip install --user Flask
 ```
-* [flask-mysql](https://firebase.google.com/docs/admin/setup)
+* [flask-mysql](https://flask-mysql.readthedocs.io/en/latest/)
 ```bash
 $ pip install --user flask-mysql
+```
+* [flask-bcrypt](https://flask-bcrypt.readthedocs.io/en/latest/)
+```bash
+$ pip install --user flask-bcrypt
+```
+* [flask-cors](https://flask-cors.readthedocs.io/en/latest/)
+```bash
+$ pip install --user flask-cors
 ```
 
 ### Setup the project
