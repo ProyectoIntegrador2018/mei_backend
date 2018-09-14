@@ -87,6 +87,15 @@ def create_user():
 	password = request.form['password']
 	hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
 
+	select_query = 'SELECT userID FROM Users WHERE email = %s'
+	data = (email)
+
+	cur.execute(select_query, data)
+	rows = cur.fetchall()
+
+	if len(rows) > 0:
+		return jsonify({'Error': 'Email already registered, please use a different one.'})
+
 	insert_query = 'INSERT INTO Users (email, name, password) VALUES (%s, %s, %s)'
 	data_to_insert = (email, name, hashed_password)
 
@@ -127,8 +136,7 @@ def login_user():
 			return jsonify({'Error': 'Wrong credentials'})
 
 	except Exception as e:
-		print(e)
-		return 'Error'
+		return jsonify({'Error': e})
 
 @app.route('/create_project', methods=['POST'])
 def create_project():
