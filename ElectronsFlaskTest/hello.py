@@ -70,7 +70,7 @@ def get_user_projects():
 	cur.execute(select_query, data)
 	rows = cur.fetchall()
 	r = [dict((cur.description[i][0], value)
-              for i, value in enumerate(row)) for row in rows]
+			  for i, value in enumerate(row)) for row in rows]
 	
 	try:
 		cur.execute(select_query, data)
@@ -130,5 +130,27 @@ def login_user():
 		print(e)
 		return 'Error'
 
+@app.route('/create_project', methods=['POST'])
+def create_project():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	name = request.form['name']
+	organization = request.form['org']
+	creation_date = request.form['creationDate']
+	context = request.form['context']
+	owner = request.form['owner']
+
+	insert_query = 'INSERT INTO Project (name, org, creationDate, context, owner) \
+									VALUES (%s, %s, %s, %s, %s)'
+	data_to_insert = (name, organization, creation_date, context, owner)
+
+	try:
+		cur.execute(insert_query, data_to_insert)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
+
 if __name__ == '__main__':
-    app.run(debug=True)
+	app.run(debug=True)
