@@ -6,8 +6,6 @@ from flask import Flask, jsonify, request, redirect, url_for, session
 from flask_cors import CORS, cross_origin
 from flaskext.mysql import MySQL
 
-from Project.py import *
-
 load_dotenv()
 
 app = Flask(__name__)
