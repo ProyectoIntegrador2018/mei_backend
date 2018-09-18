@@ -148,7 +148,7 @@ def save_project_id():
 def get_project_info():
 	connection = mysql.connect()
 	cur = connection.cursor()
-	projectID = session['projectID']
+	projectID = request.form['projectID']
 
 	select_query = 'SELECT * FROM Project WHERE projectID = %s'
 	data = (projectID)
@@ -166,6 +166,7 @@ def get_project_info():
 def edit_project():
 	connection = mysql.connect()
 	cur = connection.cursor()
+	projectID = request.form['projectID']
 
 	name = request.form['name']
 	organization = request.form['org']
@@ -173,7 +174,7 @@ def edit_project():
 	context = request.form['context']
 
 	update_query = 'UPDATE Project SET name = %s, org =  %s, creationDate = %s, context = %s WHERE projectID = %s'
-	data = (name, organization, creation_date, context, session['projectID'])
+	data = (name, organization, creation_date, context, projectID)
 
 	try:
 		cur.execute(update_query, data)
