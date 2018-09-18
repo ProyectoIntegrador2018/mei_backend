@@ -160,8 +160,8 @@ def create_project():
 	except Exception as e:
 		return jsonify({'Error': True})
 
-@app.route('/get_project_info', methods=['POST'])
-def  get_project_info():
+@app.route('/get_project_sessions', methods=['POST'])
+def  get_project_sessions():
 	connection = mysql.connect()
 	cur = connection.cursor()
 	projectID = request.form['projectID']
@@ -175,7 +175,7 @@ def  get_project_info():
 	
 	try:
 		cur.execute(select_query, data)
-		return jsonify({'Success' : True, 'Projects' : r})
+		return jsonify({'Success' : True, 'Sessions' : r})
 	except Exception as e:
 		return jsonify({'Error': True})
 
