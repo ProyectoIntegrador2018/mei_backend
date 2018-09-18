@@ -64,7 +64,7 @@ def get_user_projects():
 
 	userID = request.form['userID']
 	
-	select_query = 'SELECT name, org, creationDate, context FROM Project  WHERE owner = %s'
+	select_query = 'SELECT projectID, name, org, creationDate, context FROM Project  WHERE owner = %s'
 	data = (userID)
 	
 	cur.execute(select_query, data)
@@ -158,6 +158,49 @@ def create_project():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/get_project_info', methods=['POST'])
+def  get_project_info():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	projectID = request.form['projectID']
+
+	select_query = 'SELECT sessionID, name, summary, creationDate FROM Session  WHERE project = %s'
+	data = (projectID)
+	cur.execute(select_query, data)
+	rows = cur.fetchall()
+	r = [dict((cur.description[i][0], value)
+			  for i, value in enumerate(row)) for row in rows]
+	
+	try:
+		cur.execute(select_query, data)
+		return jsonify({'Success' : True, 'Projects' : r})
+	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/create_session', methods=['POST'])
+def create_session():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	name = request.form['name']
+	summary = request.form['summary']
+	creationDate = request.form['creationDate']
+	projectID = request.form['projectID']
+
+
+	insert_query = 'INSERT INTO Session (name, summary, creationDate, project) \
+									VALUES (%s,%s, %s, %s)'
+	data_to_insert = (name, summary, creationDate, projectID)
+
+	try:
+		cur.execute(insert_query, data_to_insert)
+		connection.commit()
+		print(connection)
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
 		return jsonify({'Error': True})
 
 if __name__ == '__main__':
