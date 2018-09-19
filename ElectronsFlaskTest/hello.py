@@ -64,7 +64,7 @@ def get_user_projects():
 
 	userID = request.form['userID']
 	
-	select_query = 'SELECT name, org, creationDate, context FROM Project  WHERE owner = %s'
+	select_query = 'SELECT projectID, name, org, creationDate, context FROM Project  WHERE owner = %s'
 	data = (userID)
 	
 	cur.execute(select_query, data)
@@ -86,6 +86,15 @@ def create_user():
 	name = request.form['name']
 	password = request.form['password']
 	hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
+
+	select_query = 'SELECT userID FROM Users WHERE email = %s'
+	data = (email)
+
+	cur.execute(select_query, data)
+	rows = cur.fetchall()
+
+	if len(rows) > 0:
+		return jsonify({'Error': 'Email already registered, please use a different one.'})
 
 	insert_query = 'INSERT INTO Users (email, name, password) VALUES (%s, %s, %s)'
 	data_to_insert = (email, name, hashed_password)
@@ -127,8 +136,52 @@ def login_user():
 			return jsonify({'Error': 'Wrong credentials'})
 
 	except Exception as e:
-		print(e)
-		return 'Error'
+		return jsonify({'Error': e})
+
+@app.route('/save_project_id', methods=['POST'])
+def save_project_id():
+	projectID = request.form['projectID']
+	session['projectID'] = projectID
+	return jsonify({'Success': True})
+
+@app.route('/get_project_info', methods=['POST'])
+def get_project_info():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	projectID = request.form['projectID']
+
+	select_query = 'SELECT * FROM Project WHERE projectID = %s'
+	data = (projectID)
+
+	try:
+		cur.execute(select_query, data)
+		row = cur.fetchall()[0]
+		creationDate = row[3]
+		creationDate = '{}-{:02d}-{:02d}'.format(creationDate.year, creationDate.month, creationDate.day)
+		return jsonify({'Success': 'True', 'projectID': row[0], 'projectName': row[1], 'organization': row[2], 'creationDate': creationDate, 'description': row[4]})
+	except Exception as e:
+		return jsonify({'Error': e})
+
+@app.route('/edit_project', methods=['POST'])
+def edit_project():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	projectID = request.form['projectID']
+
+	name = request.form['name']
+	organization = request.form['org']
+	creation_date = request.form['creationDate']
+	context = request.form['context']
+
+	update_query = 'UPDATE Project SET name = %s, org =  %s, creationDate = %s, context = %s WHERE projectID = %s'
+	data = (name, organization, creation_date, context, projectID)
+
+	try:
+		cur.execute(update_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
 
 @app.route('/create_project', methods=['POST'])
 def create_project():
@@ -150,6 +203,49 @@ def create_project():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/get_project_sessions', methods=['POST'])
+def  get_project_sessions():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	projectID = request.form['projectID']
+
+	select_query = 'SELECT sessionID, name, summary, creationDate FROM Session  WHERE project = %s'
+	data = (projectID)
+	cur.execute(select_query, data)
+	rows = cur.fetchall()
+	r = [dict((cur.description[i][0], value)
+			  for i, value in enumerate(row)) for row in rows]
+	
+	try:
+		cur.execute(select_query, data)
+		return jsonify({'Success' : True, 'Sessions' : r})
+	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/create_session', methods=['POST'])
+def create_session():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	name = request.form['name']
+	summary = request.form['summary']
+	creationDate = request.form['creationDate']
+	projectID = request.form['projectID']
+
+
+	insert_query = 'INSERT INTO Session (name, summary, creationDate, project) \
+									VALUES (%s,%s, %s, %s)'
+	data_to_insert = (name, summary, creationDate, projectID)
+
+	try:
+		cur.execute(insert_query, data_to_insert)
+		connection.commit()
+		print(connection)
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
 		return jsonify({'Error': True})
 
 if __name__ == '__main__':

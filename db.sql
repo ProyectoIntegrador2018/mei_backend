@@ -23,6 +23,7 @@ CREATE TABLE Project (
 
 CREATE TABLE Session (
 	sessionID INT AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
     creationDate DATETIME NOT NULL,
     summary VARCHAR(512) NOT NULL,
     project INT NOT NULL,
