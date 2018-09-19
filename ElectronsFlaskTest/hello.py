@@ -248,5 +248,41 @@ def create_session():
 		print(e)
 		return jsonify({'Error': True})
 
+@app.route('/get_session_data', methods=['POST'])
+def get_session_data():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	select_query = 'SELECT * FROM Session WHERE sessionID = %s'
+	data = (sessionID)
+
+	try:
+		cur.execute(select_query, data)
+		row = cur.fetchall()[0]
+		creationDate = row[2]
+		creationDate = '{}-{:02d}-{:02d}'.format(creationDate.year, creationDate.month, creationDate.day)
+		return jsonify({'Success': 'True', 'sessionID': row[0], 'name': row[1], 'summary': row[3], 'creationDate': creationDate})
+	except Exception as e:
+		return jsonify({'Error': e})
+
+@app.route('/edit_session', methods=['POST'])
+def edit_session():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	name = request.form['name']
+	summary = request.form['summary']
+	creationDate = request.form['creationDate']
+
+	update_query = 'UPDATE Session SET name = %s, summary =  %s, creationDate = %s WHERE sessionID = %s'
+	data = (name, summary, creationDate, sessionID)
+
+	try:
+		cur.execute(update_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
+
 if __name__ == '__main__':
 	app.run(debug=True)
