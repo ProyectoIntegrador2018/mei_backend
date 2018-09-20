@@ -3,15 +3,15 @@ CREATE DATABASE MEI;
 USE MEI;
 
 CREATE TABLE Users (
-	userID INT AUTO_INCREMENT,
-	email VARCHAR(255) NOT NULL UNIQUE,
+    userID INT AUTO_INCREMENT,
+    email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     PRIMARY KEY (userID)
 );
 
 CREATE TABLE Project (
-	projectID INT AUTO_INCREMENT,
+    projectID INT AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     org VARCHAR(255) NOT NULL,
     creationDate DATETIME NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE Project (
 );
 
 CREATE TABLE Session (
-	sessionID INT AUTO_INCREMENT,
+    sessionID INT AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     creationDate DATETIME NOT NULL,
     summary VARCHAR(512) NOT NULL,
@@ -32,11 +32,10 @@ CREATE TABLE Session (
 );
 
 CREATE TABLE Member (
-	memberID INT AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     session INT NOT NULL,
     FOREIGN KEY (session) REFERENCES Session(sessionID),
-    PRIMARY KEY (memberID, session, email)
+    PRIMARY KEY (session, email)
 );

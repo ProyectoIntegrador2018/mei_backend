@@ -242,11 +242,137 @@ def create_session():
 	try:
 		cur.execute(insert_query, data_to_insert)
 		connection.commit()
-		print(connection)
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/delete_participant', methods=['POST'])
+def delete_participant():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	email = request.form['email']
+	sessionID = request.form['sessionID']
+
+	query = 'DELETE FROM Member WHERE email = %s AND session = %s'
+	data = (email, sessionID)
+
+	try:
+		cur.execute(query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/edit_participant', methods=['POST'])
+def edit_participant():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	name = request.form['name']
+	previous_email = request.form['previous_email']
+	new_email = request.form['new_email']
+	role = request.form['role']
+	sessionID = request.form['sessionID']
+
+	query = 'UPDATE Member SET name = %s, email = %s, role = %s WHERE email = %s AND session = %s'
+	data = (name, new_email, role, previous_email, sessionID)
+
+	try:
+		cur.execute(query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': True})
+
+@app.route('/create_participant', methods=['POST'])
+def create_participant():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	name = request.form['name']
+	email = request.form['email']
+	role = request.form['role']
+	sessionID = request.form['sessionID']
+
+	query = 'INSERT INTO Member (name, email, role, session) VALUES (%s, %s, %s, %s)'
+	data = (name, email, role, sessionID)
+
+	try:
+		cur.execute(query, data)
+		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': True})
+
+@app.route('/get_session_participants', methods=['POST'])
+def get_session_participants():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	sessionID = request.form['sessionID']
+
+	query = 'SELECT * FROM Member WHERE session = %s'
+	data = (sessionID)
+
+	try:
+		cur.execute(query, data)
+		rows = cur.fetchall()
+		r = [dict((cur.description[i][0], value)
+				  for i, value in enumerate(row)) for row in rows]
+		return jsonify({'Success': True, 'Members': r})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': True})
+
+@app.route('/get_participant_information', methods=['POST'])
+def get_participant_information():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	sessionID = request.form['sessionID']
+	email = request.form['email']
+
+	query = 'SELECT * FROM Member WHERE email = %s AND session = %s'
+	data = (email, sessionID)
+
+	try:
+		cur.execute(query, data)
+		row = cur.fetchall()[0] # Only one user should be returned since the primary key is (sessionID, email)
+		return jsonify({'Success': True, 'name': row[0], 'role': row[3], 'email': row[1]})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': True})
+
+@app.route('/copy_session_participants', methods=['POST'])
+def copy_session_participants():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	sessionID = request.form['sessionID']
+	copy_from_sessionID = request.form['copyFromSessionID']
+
+	query = 'SELECT name, email, role FROM ((SELECT name, email, role FROM Member WHERE session = %s) UNION (SELECT name, email, role FROM Member WHERE session = %s)) AS memberunion WHERE email NOT IN (SELECT email FROM Member WHERE session = %s)'
+	data = (copy_from_sessionID, sessionID, sessionID)
+
+	insert_query = 'INSERT INTO Member (name, email, role, session) VALUES (%s, %s, %s, %s)'
+
+	try:
+		cur.execute(query, data)
+		participants_to_insert = cur.fetchall() # Participants that are in session to copy from and are not already registered in the session to copy to
+		print(participants_to_insert)
+		for participant in participants_to_insert:
+			name, email, role = participant[0], participant[1], participant[2]
+			data_to_insert = (name, email, role, sessionID)
+			print(data_to_insert)
+			cur.execute(insert_query, data_to_insert)
+
+		connection.commit()
+
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
 
 @app.route('/get_session_data', methods=['POST'])
 def get_session_data():
