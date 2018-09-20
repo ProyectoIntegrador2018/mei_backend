@@ -54,7 +54,7 @@ def get_session_info():
 		cur.execute(select_query, data)
 		return jsonify({'Success' : True, 'userID' : userID, 'name' : name})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/get_user_projects', methods=['POST'])
 def get_user_projects():
@@ -76,7 +76,7 @@ def get_user_projects():
 		cur.execute(select_query, data)
 		return jsonify({'Success' : True, 'Projects' : r})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/create_user', methods=['POST'])
 def create_user():
@@ -104,7 +104,7 @@ def create_user():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/login_user', methods=['POST'])
 def login_user():
@@ -136,7 +136,7 @@ def login_user():
 			return jsonify({'Error': 'Wrong credentials'})
 
 	except Exception as e:
-		return jsonify({'Error': e})
+		return jsonify({'Error': str(e)})
 
 @app.route('/save_project_id', methods=['POST'])
 def save_project_id():
@@ -160,7 +160,7 @@ def get_project_info():
 		creationDate = '{}-{:02d}-{:02d}'.format(creationDate.year, creationDate.month, creationDate.day)
 		return jsonify({'Success': 'True', 'projectID': row[0], 'projectName': row[1], 'organization': row[2], 'creationDate': creationDate, 'description': row[4]})
 	except Exception as e:
-		return jsonify({'Error': e})
+		return jsonify({'Error': str(e)})
 
 @app.route('/edit_project', methods=['POST'])
 def edit_project():
@@ -181,7 +181,7 @@ def edit_project():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/create_project', methods=['POST'])
 def create_project():
@@ -203,7 +203,7 @@ def create_project():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/get_project_sessions', methods=['POST'])
 def  get_project_sessions():
@@ -211,7 +211,7 @@ def  get_project_sessions():
 	cur = connection.cursor()
 	projectID = request.form['projectID']
 
-	select_query = 'SELECT sessionID, name, summary, creationDate FROM Session  WHERE project = %s'
+	select_query = 'SELECT sessionID, name, summary, triggeringQuestion, creationDate FROM Session  WHERE project = %s'
 	data = (projectID)
 	cur.execute(select_query, data)
 	rows = cur.fetchall()
@@ -222,7 +222,7 @@ def  get_project_sessions():
 		cur.execute(select_query, data)
 		return jsonify({'Success' : True, 'Sessions' : r})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/create_session', methods=['POST'])
 def create_session():
@@ -231,20 +231,20 @@ def create_session():
 
 	name = request.form['name']
 	summary = request.form['summary']
+	triggeringQuestion = request.form['triggeringQuestion']
 	creationDate = request.form['creationDate']
 	projectID = request.form['projectID']
 
-
-	insert_query = 'INSERT INTO Session (name, summary, creationDate, project) \
-									VALUES (%s,%s, %s, %s)'
-	data_to_insert = (name, summary, creationDate, projectID)
+	insert_query = 'INSERT INTO Session (name, summary, triggeringQuestion, creationDate, project) \
+									VALUES (%s,%s, %s, %s, %s)'
+	data_to_insert = (name, summary, triggeringQuestion, creationDate, projectID)
 
 	try:
 		cur.execute(insert_query, data_to_insert)
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/delete_participant', methods=['POST'])
 def delete_participant():
@@ -262,7 +262,7 @@ def delete_participant():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/edit_participant', methods=['POST'])
 def edit_participant():
@@ -283,7 +283,7 @@ def edit_participant():
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/create_participant', methods=['POST'])
 def create_participant():
@@ -304,7 +304,7 @@ def create_participant():
 		return jsonify({'Success': True})
 	except Exception as e:
 		print(e)
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/get_session_participants', methods=['POST'])
 def get_session_participants():
@@ -324,7 +324,7 @@ def get_session_participants():
 		return jsonify({'Success': True, 'Members': r})
 	except Exception as e:
 		print(e)
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/get_participant_information', methods=['POST'])
 def get_participant_information():
@@ -343,7 +343,7 @@ def get_participant_information():
 		return jsonify({'Success': True, 'name': row[0], 'role': row[3], 'email': row[1]})
 	except Exception as e:
 		print(e)
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 @app.route('/copy_session_participants', methods=['POST'])
 def copy_session_participants():
@@ -385,11 +385,11 @@ def get_session_data():
 	try:
 		cur.execute(select_query, data)
 		row = cur.fetchall()[0]
-		creationDate = row[2]
+		creationDate = row[4]
 		creationDate = '{}-{:02d}-{:02d}'.format(creationDate.year, creationDate.month, creationDate.day)
-		return jsonify({'Success': 'True', 'sessionID': row[0], 'name': row[1], 'summary': row[3], 'creationDate': creationDate})
+		return jsonify({'Success': 'True', 'sessionID': row[0], 'name': row[1], 'summary': row[2], 'triggeringQuestion'	: row[3], 'creationDate': creationDate})
 	except Exception as e:
-		return jsonify({'Error': e})
+		return jsonify({'Error': str(e)})
 
 @app.route('/edit_session', methods=['POST'])
 def edit_session():
@@ -398,17 +398,18 @@ def edit_session():
 	sessionID = request.form['sessionID']
 	name = request.form['name']
 	summary = request.form['summary']
+	triggeringQuestion = request.form['triggeringQuestion']
 	creationDate = request.form['creationDate']
 
-	update_query = 'UPDATE Session SET name = %s, summary =  %s, creationDate = %s WHERE sessionID = %s'
-	data = (name, summary, creationDate, sessionID)
+	update_query = 'UPDATE Session SET name = %s, summary =  %s, triggeringQuestion = %s, creationDate = %s WHERE sessionID = %s'
+	data = (name, summary, triggeringQuestion, creationDate, sessionID)
 
 	try:
 		cur.execute(update_query, data)
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
-		return jsonify({'Error': True})
+		return jsonify({'Error': str(e)})
 
 if __name__ == '__main__':
 	app.run(debug=True)
