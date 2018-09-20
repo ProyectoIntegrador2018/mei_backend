@@ -339,10 +339,8 @@ def get_participant_information():
 
 	try:
 		cur.execute(query, data)
-		rows = cur.fetchall() # Only one user should be returned since the primary key is (sessionID, email)
-		r = [dict((cur.description[i][0], value)
-				  for i, value in enumerate(row)) for row in rows]
-		return jsonify({'Success': True, 'Members': r})
+		row = cur.fetchall()[0] # Only one user should be returned since the primary key is (sessionID, email)
+		return jsonify({'Success': True, 'name': row[0], 'role': row[3], 'email': row[1]})
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': True})
