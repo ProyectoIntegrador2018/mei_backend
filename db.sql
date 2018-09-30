@@ -32,11 +32,22 @@ CREATE TABLE Session (
     PRIMARY KEY (sessionID)
 );
 
+CREATE TABLE Role (
+    name VARCHAR(255) NOT NULL,
+    PRIMARY KEY(name)
+);
+
+INSERT INTO Role (name) VALUES ('Participant');
+INSERT INTO Role (name) VALUES ('Observer');
+INSERT INTO Role (name) VALUES ('Documenter');
+INSERT INTO Role (name) VALUES ('Facilitator');
+
 CREATE TABLE Member (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     session INT NOT NULL,
     FOREIGN KEY (session) REFERENCES Session(sessionID),
+    FOREIGN KEY (role) REFERENCES Role(name),
     PRIMARY KEY (session, email)
 );
