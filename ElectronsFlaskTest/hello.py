@@ -391,6 +391,21 @@ def get_session_data():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_participant_types', methods=['POST'])
+def get_participant_types():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	select_query = 'SELECT * FROM Role'
+
+	try:
+		cur.execute(select_query)
+		rows = cur.fetchall()
+		r = [dict((cur.description[i][0], value)
+			  for i, value in enumerate(row)) for row in rows]
+		return jsonify({'Success': True, 'Roles': r})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 @app.route('/edit_session', methods=['POST'])
 def edit_session():
 	connection = mysql.connect()
