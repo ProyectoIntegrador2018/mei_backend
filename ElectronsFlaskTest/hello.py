@@ -426,5 +426,22 @@ def edit_session():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_session_ideas', methods=['POST'])
+def get_session_ideas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query = 'SELECT * FROM Element WHERE sessionID = %s'
+	data = (sessionID)
+
+	try:
+		cur.execute(query, data)
+		rows = cur.fetchall()
+		r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in rows]
+		return jsonify({'Success': True, 'Elements': r})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 if __name__ == '__main__':
 	app.run(debug=True)
