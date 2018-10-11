@@ -51,3 +51,29 @@ CREATE TABLE Member (
     FOREIGN KEY (role) REFERENCES Role(name),
     PRIMARY KEY (session, email)
 );
+
+CREATE TABLE IdeaType (
+    name VARCHAR(255) NOT NULL,
+    PRIMARY KEY(name)
+);
+
+INSERT INTO IdeaType (name) VALUES ('Problem');
+INSERT INTO IdeaType (name) VALUES ('Objective');
+INSERT INTO IdeaType (name) VALUES ('Solution');
+INSERT INTO IdeaType (name) VALUES ('Action');
+INSERT INTO IdeaType (name) VALUES ('Feature');
+
+CREATE TABLE Idea (
+    ideaID INT AUTO_INCREMENT,
+    parentIdeaID INT,
+    idea VARCHAR(510) NOT NULL, 
+    clarification  VARCHAR(255),
+    participant VARCHAR(255),
+    type VARCHAR(255) NOT NULL,
+    session INT NOT NULL,
+    FOREIGN KEY(session, participant) REFERENCES Member(session, email),
+    FOREIGN KEY (type) REFERENCES IdeaType(name),
+    FOREIGN KEY (session) REFERENCES Session(sessionID),
+    FOREIGN KEY (parentIdeaID) REFERENCES Idea (ideaID),
+    PRIMARY KEY (ideaID)
+);
