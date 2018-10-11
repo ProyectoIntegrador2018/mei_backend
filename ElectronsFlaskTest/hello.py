@@ -432,16 +432,53 @@ def get_session_ideas():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 
-	query = 'SELECT * FROM Element WHERE sessionID = %s'
+	query_parents = 'SELECT * FROM Idea WHERE session = %s AND parentIdeaID IS NULL'
+	query_children = 'SELECT * FROM Idea WHERE session = %s AND parentIdeaID IS NOT NULL'
 	data = (sessionID)
 
 	try:
-		cur.execute(query, data)
-		rows = cur.fetchall()
-		r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in rows]
-		return jsonify({'Success': True, 'Elements': r})
+		cur.execute(query_parents, data)
+		parent_rows = cur.fetchall()
+
+		cur.execute(query_children, data)
+		child_rows = cur.fetchall()
+
+		ideas = dict()
+
+		for parent in parent_rows:
+			parentID = parent[0]
+			ideas[parentID] = [parent] + list(filter(lambda x: x is not None , list(map(lambda child: child if child[1] == parentID else None, child_rows))))
+
+		return jsonify({'Success': True, 'Ideas': ideas})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+
+@app.route('/join_ideas', methods=['POST'])
+def join_ideas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	query = 'Update IDEA SET parentIdeaID = %s WHERE ideaID = %s'
+	try:
+		# Reset all parent/child relationship
+		for key, value in request.form.items():
+			if (key  != 'sessionID'):
+				ideaID = int(key[key.find('[') + 1 : key.find(']')])
+				data = (None, ideaID)
+				cur.execute(query, data)
+		
+		# Set parentIdeaID for all child ideas
+		for key, value in request.form.items():
+			if (key  != 'sessionID'):
+				parentIdeaID = int(key[key.find('[') + 1 : key.find(']')])
+				childIdeas = list(map(lambda childIdeaID: int(childIdeaID), request.form.getlist(key)[1:]))
+				for childIdeaID in childIdeas:
+					data = (parentIdeaID, childIdeaID)
+					cur.execute(query, data)
+
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error', str(e)})
 
 if __name__ == '__main__':
 	app.run(debug=True)

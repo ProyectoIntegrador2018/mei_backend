@@ -65,13 +65,15 @@ INSERT INTO IdeaType (name) VALUES ('Feature');
 
 CREATE TABLE Idea (
     ideaID INT AUTO_INCREMENT,
+    parentIdeaID INT,
     idea VARCHAR(510) NOT NULL, 
     clarification  VARCHAR(255),
     participant VARCHAR(255),
     type VARCHAR(255) NOT NULL,
     session INT NOT NULL,
-    FOREIGN KEY(participant) REFERENCES Member(email),
+    FOREIGN KEY(session, participant) REFERENCES Member(session, email),
     FOREIGN KEY (type) REFERENCES IdeaType(name),
-    FOREIGN KEY (session) REFERENCES Session(sessionID)
-    PRIMARY KEY (session, ideaID)
+    FOREIGN KEY (session) REFERENCES Session(sessionID),
+    FOREIGN KEY (parentIdeaID) REFERENCES Idea (ideaID),
+    PRIMARY KEY (ideaID)
 );
