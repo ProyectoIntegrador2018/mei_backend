@@ -435,7 +435,6 @@ def get_session_ideas():
 	query_parents = 'SELECT * FROM Idea WHERE session = %s AND parentIdeaID IS NULL'
 	query_children = 'SELECT * FROM Idea WHERE session = %s AND parentIdeaID IS NOT NULL'
 	data = (sessionID)
-
 	try:
 		cur.execute(query_parents, data)
 		parent_rows = cur.fetchall()
@@ -479,6 +478,27 @@ def join_ideas():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error', str(e)})
+
+@app.route('/create_element', methods=['POST'])
+def create_element():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	idea = request.form['idea']
+	clarification = request.form['clarification']
+	participant = request.form['participant']
+	ideaType = request.form['ideaType']
+	sessionID = request.form['sessionID']
+
+	insert_query = 'INSERT INTO Idea (idea, clarification, participant, type, session) \
+									VALUES (%s,%s, %s, %s, %s)'
+	data_to_insert = (idea, clarification, participant, ideaType, sessionID)
+
+	try:
+		cur.execute(insert_query, data_to_insert)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
 
 if __name__ == '__main__':
 	app.run(debug=True)
