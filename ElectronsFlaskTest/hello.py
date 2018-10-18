@@ -479,6 +479,23 @@ def join_ideas():
 	except Exception as e:
 		return jsonify({'Error', str(e)})
 
+@app.route('/update_clarification', methods=['POST'])
+def update_clarification():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	ideaID = request.form['ideaID']
+	clarification = request.form['clarification']
+
+	query = 'UPDATE Idea SET clarification = %s WHERE ideaID = %s'
+	data = (clarification, ideaID)
+
+	try:
+		cur.execute(query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 @app.route('/create_element', methods=['POST'])
 def create_element():
 	connection = mysql.connect()
