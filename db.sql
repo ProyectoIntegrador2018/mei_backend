@@ -71,6 +71,7 @@ CREATE TABLE Idea (
     participant VARCHAR(255),
     type VARCHAR(255) NOT NULL,
     session INT NOT NULL,
+    ideaSessionNumber INT NOT NULL,
     FOREIGN KEY(session, participant) REFERENCES Member(session, email),
     FOREIGN KEY (type) REFERENCES IdeaType(name),
     FOREIGN KEY (session) REFERENCES Session(sessionID),

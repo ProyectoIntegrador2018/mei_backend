@@ -452,6 +452,25 @@ def get_session_ideas():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_all_session_ideas', methods=['POST'])
+def get_all_session_ideas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_ideas = 'SELECT * FROM Idea WHERE session = %s ORDER BY ideaSessionNumber'
+	data = (sessionID)
+	try:
+		cur.execute(query_ideas, data)
+		rows = cur.fetchall()
+
+		ideas = [dict((cur.description[i][0], value)
+			for i, value in enumerate(row)) for row in rows]
+
+		return jsonify({'Success': True, 'Ideas': ideas})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 @app.route('/join_ideas', methods=['POST'])
 def join_ideas():
 	connection = mysql.connect()
@@ -500,20 +519,17 @@ def update_clarification():
 def create_element():
 	connection = mysql.connect()
 	cur = connection.cursor()
+	print(request.form)
 	idea = request.form['idea']
-	clarification = request.form['clarification']
-	participant = request.form['participant']
+	participant = request.form['participant'] if request.form['participant'] != '' else None
 	ideaType = request.form['ideaType']
 	sessionID = request.form['sessionID']
 
-	insert_query = 'INSERT INTO Idea (idea, clarification, participant, type, session) \
-									VALUES (%s,%s, %s, %s, %s)'
-	data_to_insert = (idea, clarification, participant, ideaType, sessionID)
-
 	try:
-		cur.execute(insert_query, data_to_insert)
+		cur.callproc('CreateElement', (idea, participant, ideaType, sessionID))
+		row = cur.fetchall()
 		connection.commit()
-		return jsonify({'Success': True})
+		return jsonify({'Success': True, 'ideaID': row[0][0], 'ideaNumber': row[0][1]})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
