@@ -1,10 +1,12 @@
 import bcrypt
 import datetime
 import os
+import json
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, redirect, url_for, session
 from flask_cors import CORS, cross_origin
 from flaskext.mysql import MySQL
+from ISM import ISM
 
 load_dotenv()
 
@@ -24,6 +26,8 @@ app.config['MYSQL_DATABASE_HOST'] = os.getenv('MYSQL_DATABASE_HOST')
 app.secret_key = b'nDnacIzgawo6d4hdRR8y'
 
 mysql.init_app(app)
+
+sessionISM = dict()
 
 @app.route('/', methods=['POST', 'GET'])
 def hello_world():
@@ -532,6 +536,124 @@ def create_element():
 		return jsonify({'Success': True, 'ideaID': row[0][0], 'ideaNumber': row[0][1]})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+
+@app.route('/start_general_structure', methods=['POST'])
+def start_general_structure():
+	sessionID = request.form['sessionID']
+	amountIdeas = int(request.form['amountIdeas'])
+	sessionISM[sessionID] = ISM(amountIdeas)
+	return jsonify({'Success': True})
+
+@app.route('/get_next_question', methods=['POST'])
+def get_next_question():
+	sessionID = request.form['sessionID']
+	if sessionISM[sessionID].finishedContextualRelationships:
+		return jsonify({'finished': True})
+	else:
+		nextQuestion = sessionISM[sessionID].getNextQuestion()
+		return jsonify({'first': nextQuestion[0], 'second': nextQuestion[1], 'finished': False})
+
+@app.route('/answer_question', methods=['POST'])
+def answer_question():
+	sessionID = request.form['sessionID']
+	firstElement = int(request.form['firstElement'])
+	secondElement = int(request.form['secondElement'])
+	answer = int(request.form['answer'])
+	sessionISM[sessionID].answerQuestion(answer, firstElement, secondElement)
+	return jsonify({'finished': sessionISM[sessionID].finishedContextualRelationships, 'levels': sessionISM[sessionID].levels})
+
+@app.route('/save_votes', methods=['POST'])
+def save_votes():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	data = request.get_json()
+	sessionID = int(data['sessionID'])
+	votes = data['votes']
+	try:
+		query = 'INSERT INTO QuestionAsked VALUES (%s, %s, %s, %s, %s)'
+		for vote in votes:
+			data = (sessionID, vote['firstElementID'], vote['secondElementID'], vote['yesVotes'], vote['noVotes'])
+			cur.execute(query, data)
+
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/save_matrix_structure', methods=['POST'])
+def save_matrix_structure():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	sessionID = request.form['sessionID']
+	reachabilityMatrix = sessionISM[sessionID].reachability_matrix
+	levels = sessionISM[sessionID].levels
+
+	print(reachabilityMatrix)
+	print(levels)
+
+	insert_matrix = 'INSERT INTO MatrixValue (sessionID, iRow, iColumn, value) VALUES (%s, %s, %s, %s)'
+	insert_levels = 'INSERT INTO GeneralStructure (sessionID, levels) VALUES (%s, %s)'
+	levels_data = (sessionID, json.dumps(levels)) 
+
+	try:
+		for i in range(len(reachabilityMatrix)):
+			for j in range(len(reachabilityMatrix[i])):
+				data = (sessionID, i, j, int(reachabilityMatrix[i][j]))
+				cur.execute(insert_matrix, data)
+
+		cur.execute(insert_levels, levels_data)
+		connection.commit()
+
+		return jsonify({'Success': True})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/session_has_structure', methods=['POST'])
+def session_has_structure():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT COUNT(*) FROM GeneralStructure WHERE sessionID = %s'
+	data = (sessionID,)
+	try:
+		cur.execute(query, data)
+		count = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'hasStructure': count > 0})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/delete_structure_matrix', methods=['POST'])
+def delete_structure_matrix():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	delete_structure = 'DELETE FROM GeneralStructure WHERE sessionID = %s'
+	delete_matrix = 'DELETE FROM MatrixValue WHERE sessionID = %s'
+	delete_questions_asked = 'DELETE FROM QuestionAsked WHERE sessionID = %s'
+	data = (sessionID,)
+	try:
+		cur.execute(delete_structure, data)
+		cur.execute(delete_matrix, data)
+		cur.execute(delete_questions_asked, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/ideatype_question', methods=['POST'])
+def ideatype_question():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	ideaType = request.form['ideaType']
+	query = 'SELECT defaultRelationQuestion FROM IdeaType WHERE name = %s'
+	data = (ideaType,)
+	try:
+		cur.execute(query, data)
+		question = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'question': question})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
 
 if __name__ == '__main__':
 	app.run(debug=True)
