@@ -539,9 +539,10 @@ def create_element():
 
 @app.route('/start_general_structure', methods=['POST'])
 def start_general_structure():
-	sessionID = request.form['sessionID']
-	amountIdeas = int(request.form['amountIdeas'])
-	sessionISM[sessionID] = ISM(amountIdeas)
+	data = request.get_json()
+	sessionID = data['sessionID']
+	ideas = data['ideas']
+	sessionISM[sessionID] = ISM(ideas)
 	return jsonify({'Success': True})
 
 @app.route('/get_next_question', methods=['POST'])
@@ -597,9 +598,11 @@ def save_matrix_structure():
 	levels_data = (sessionID, json.dumps(levels)) 
 
 	try:
-		for i in range(len(reachabilityMatrix)):
-			for j in range(len(reachabilityMatrix[i])):
-				data = (sessionID, i, j, int(reachabilityMatrix[i][j]))
+		for i in range(1, len(reachabilityMatrix)):
+			for j in range(1, len(reachabilityMatrix[i])):
+				ideaID1 = sessionISM[sessionID].variables_dict[int(reachabilityMatrix[i][0]) - 1]['ideaID']
+				ideaID2 = sessionISM[sessionID].variables_dict[int(reachabilityMatrix[0][j]) - 1]['ideaID']
+				data = (sessionID, ideaID1, ideaID2, int(reachabilityMatrix[i][j]))
 				cur.execute(insert_matrix, data)
 
 		cur.execute(insert_levels, levels_data)
