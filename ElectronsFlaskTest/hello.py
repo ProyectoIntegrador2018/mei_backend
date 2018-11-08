@@ -536,6 +536,119 @@ def create_element():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_structure_question', methods=['POST'])
+def get_structure_question():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	structureType = request.form['structureType']
+
+	try:
+		cur.callproc('GetStructureQuestion', (structureType,))
+		question = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'question': question})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/save_categories', methods=['POST'])
+def save_categories():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	data = request.get_json()
+	sessionID = int(data['sessionID'])
+	categories = data['categories']
+	questions = data['questions']
+
+	try:
+		for category in categories:
+			cur.callproc('CreateCategory', (sessionID,))
+			categoryID = cur.fetchall()[0][0]
+			for ideaID in categories[str(category)]:
+				cur.callproc('UpdateCategoryForIdea', (int(categoryID), int(ideaID)))
+
+		for question in questions:
+			firstElementID, secondElementID = question['firstElement'], question['secondElement']
+			yesVotes, noVotes = question['yesVotes'], question['noVotes']
+			answer = question['answer']
+			cur.callproc('AddCategoriesQuestion', (sessionID, firstElementID, secondElementID, yesVotes, noVotes, answer))
+
+		connection.commit()
+		return jsonify({'Success': True	})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/delete_session_categories', methods=['POST'])
+def delete_session_categories():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	delete_category = 'DELETE FROM Category WHERE sessionID = %s'
+	delete_questions = 'DELETE FROM CategoryQuestion WHERE sessionID = %s'
+	remove_category_from_ideas = 'UPDATE Idea SET CategoryID = %s WHERE session = %s'
+	try:
+		cur.execute(remove_category_from_ideas, (None, sessionID))
+		cur.execute(delete_category, (sessionID,))
+		cur.execute(delete_questions, (sessionID,))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/session_has_categories', methods=['POST'])
+def session_has_categories():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT COUNT(*) FROM Category WHERE sessionID = %s'
+	data = (sessionID,)
+	try:
+		cur.execute(query, data)
+		count = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'hasCategories': count > 0})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/update_category_name', methods=['POST'])
+def update_category_name():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	categoryID = request.form['categoryID']
+	categoryName = request.form['categoryName']
+	try:
+		cur.callproc('UpdateCategoryName', (categoryID, categoryName))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_session_ideas_in_categories', methods=['POST'])
+def get_session_ideas_in_categories():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	categories = []
+	try:
+		cur.callproc('GetCategoriesIDForSession', (sessionID,))
+		resultCategories = cur.fetchall()
+		for category in resultCategories:
+			categoryID, categoryName = category[0], category[1]
+			cur.callproc('GetIdeasInCategory', (sessionID, categoryID))
+			resultIdeas = cur.fetchall()
+			ideas = []
+			for idea in resultIdeas:
+				ideaID, statement, clarification, ideaType, ideaSessionNumber = idea[0], idea[1], idea[2], idea[3], idea[4]
+
+				if clarification == None or clarification == "":
+					clarification = "No clarification"
+				
+				ideas.append({'ideaID': ideaID, 'statement': statement, 'clarification': clarification, 'ideaType': ideaType, 'ideaSessionNumber': ideaSessionNumber})
+
+			categories.append({'categoryID': categoryID, 'categoryName': categoryName, 'ideas': ideas})
+		
+		return jsonify({'Success': True, 'categories': categories})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 @app.route('/set_voting_details', methods=['POST'])
 def set_voting_details():
 	connection = mysql.connect()

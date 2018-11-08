@@ -63,6 +63,27 @@ INSERT INTO IdeaType (name) VALUES ('Solution');
 INSERT INTO IdeaType (name) VALUES ('Action');
 INSERT INTO IdeaType (name) VALUES ('Feature');
 
+CREATE TABLE Category (
+    categoryID INT AUTO_INCREMENT,
+    sessionID INT NOT NULL,
+    categoryName VARCHAR(255) NOT NULL,
+    PRIMARY KEY (categoryID),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
+);
+
+CREATE TABLE CategoryQuestion (
+    sessionID INT NOT NULL,
+    firstElementID INT NOT NULL,
+    secondElementID INT NOT NULL,
+    yesVotes INT NOT NULL,
+    noVotes INT NOT NULL,
+    answer BOOL NOT NULL,
+    PRIMARY KEY (sessionID, firstElementID, secondElementID),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID),
+    FOREIGN KEY (firstElementID) REFERENCES Idea(ideaID),
+    FOREIGN KEY (secondElementID) REFERENCES Idea(ideaID)
+);
+
 CREATE TABLE Idea (
     ideaID INT AUTO_INCREMENT,
     parentIdeaID INT,
@@ -72,12 +93,23 @@ CREATE TABLE Idea (
     type VARCHAR(255) NOT NULL,
     session INT NOT NULL,
     ideaSessionNumber INT NOT NULL,
+    categoryID INT,
     FOREIGN KEY(session, participant) REFERENCES Member(session, email),
     FOREIGN KEY (type) REFERENCES IdeaType(name),
     FOREIGN KEY (session) REFERENCES Session(sessionID),
     FOREIGN KEY (parentIdeaID) REFERENCES Idea (ideaID),
+    FOREIGN KEY (categoryID) REFERENCES Category (categoryID),
     PRIMARY KEY (ideaID)
 );
+
+CREATE TABLE StructureQuestion (
+    structureType VARCHAR(128),
+    structureQuestion VARCHAR(255),
+    PRIMARY KEY (structureType)
+);
+
+INSERT INTO StructureQuestion (structureType, structureQuestion) VALUES ('CAMPO', 'pertenece a la misma cateogría que');
+INSERT INTO StructureQuestion (structureType, structureQuestion) VALUES ('PRIORIDAD', 'tiene');
 
 CREATE TABLE Votes (
     voteID INT AUTO_INCREMENT,
@@ -94,3 +126,4 @@ CREATE TABLE VotingDetails (
   ideasToVote INT
   PRIMARY KEY (session)
 );
+
