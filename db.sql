@@ -87,7 +87,7 @@ CREATE TABLE CategoryQuestion (
 CREATE TABLE Idea (
     ideaID INT AUTO_INCREMENT,
     parentIdeaID INT,
-    idea VARCHAR(510) NOT NULL, 
+    idea VARCHAR(510) NOT NULL,
     clarification  VARCHAR(255),
     participant VARCHAR(255),
     type VARCHAR(255) NOT NULL,
@@ -110,3 +110,20 @@ CREATE TABLE StructureQuestion (
 
 INSERT INTO StructureQuestion (structureType, structureQuestion) VALUES ('CAMPO', 'pertenece a la misma cateogría que');
 INSERT INTO StructureQuestion (structureType, structureQuestion) VALUES ('PRIORIDAD', 'tiene');
+
+CREATE TABLE Votes (
+    voteID INT AUTO_INCREMENT,
+    session INT NOT NULL,
+    ideaID INT NOT NULL,
+    participant VARCHAR(255) NOT NULL,
+    ideaPriority INT,
+    PRIMARY KEY (voteID)
+);
+
+CREATE TABLE VotingDetails (
+  session INT NOT NULL,
+  votingScheme VARCHAR(255),
+  ideasToVote INT
+  PRIMARY KEY (session)
+);
+

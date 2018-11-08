@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, redirect, url_for, session
 from flask_cors import CORS, cross_origin
 from flaskext.mysql import MySQL
+import random
+import collections
+
 
 load_dotenv()
 
@@ -41,7 +44,7 @@ def get_session_info():
 
 	session_key = request.form['session_key']
 	email = session[session_key]
-	
+
 	select_query = 'SELECT userID, name FROM Users WHERE email = %s'
 	data = (email)
 
@@ -63,15 +66,15 @@ def get_user_projects():
 	cur = connection.cursor()
 
 	userID = request.form['userID']
-	
+
 	select_query = 'SELECT projectID, name, org, creationDate, context FROM Project  WHERE owner = %s'
 	data = (userID)
-	
+
 	cur.execute(select_query, data)
 	rows = cur.fetchall()
 	r = [dict((cur.description[i][0], value)
 			  for i, value in enumerate(row)) for row in rows]
-	
+
 	try:
 		cur.execute(select_query, data)
 		return jsonify({'Success' : True, 'Projects' : r})
@@ -217,7 +220,7 @@ def  get_project_sessions():
 	rows = cur.fetchall()
 	r = [dict((cur.description[i][0], value)
 			  for i, value in enumerate(row)) for row in rows]
-	
+
 	try:
 		cur.execute(select_query, data)
 		return jsonify({'Success' : True, 'Sessions' : r})
@@ -483,7 +486,7 @@ def join_ideas():
 				ideaID = int(key[key.find('[') + 1 : key.find(']')])
 				data = (None, ideaID)
 				cur.execute(query, data)
-		
+
 		# Set parentIdeaID for all child ideas
 		for key, value in request.form.items():
 			if (key  != 'sessionID'):
@@ -645,6 +648,191 @@ def get_session_ideas_in_categories():
 		return jsonify({'Success': True, 'categories': categories})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+
+@app.route('/set_voting_details', methods=['POST'])
+def set_voting_details():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	votingScheme = request.form['votingScheme']
+	ideasToVote = request.form['ideasToVote']
+
+	print(sessionID,votingScheme,ideasToVote)
+
+	query = 'INSERT INTO VotingDetails (sessionID, votingScheme, ideasToVote) VALUES (%s, %s, %s)'
+	data = (sessionID, votingScheme, ideasToVote)
+
+	try:
+		cur.execute(query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+@app.route('/get_voting_details', methods=['POST'])
+def get_voting_details():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_details = 'SELECT * FROM VotingDetails WHERE sessionID = %s'
+	data = (sessionID)
+
+	try:
+		cur.execute(query_details, data)
+		rows = cur.fetchall()
+
+		details = [dict((cur.description[i][0], value)
+			for i, value in enumerate(row)) for row in rows]
+		print(details)
+		if len(details) > 0:
+			return jsonify({'Success': True, 'votingDetails': details})
+		else:
+			return jsonify({'Success': False, 'votingDetails': details})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/get_parent_ideas', methods=['POST'])
+def get_parent_ideas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_parents = 'SELECT ideaID,idea FROM Idea WHERE session = %s AND parentIdeaID IS NULL ORDER BY ideaID'
+	data = (sessionID)
+	try:
+		cur.execute(query_parents, data)
+		parent_rows = cur.fetchall()
+		print(parent_rows)
+		ideasIds = []
+		ideasTexts = []
+
+		for parent in parent_rows:
+			parentID = parent[0]
+			print(parentID)
+			parentText = parent[1]
+			print(parentText)
+			ideasIds.append(parentID)
+			ideasTexts.append(parentText)
+
+		print(ideasIds,ideasTexts)
+
+		return jsonify({'Success': True, 'ideasIDs': ideasIds, 'ideasText':ideasTexts})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/get_first_ideaID', methods=['POST'])
+def get_first_ideaID():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_parents = 'SELECT ideaID FROM Idea WHERE session = %s ORDER BY ideaID LIMIT 1'
+	data = (sessionID)
+	try:
+		cur.execute(query_parents, data)
+		row = cur.fetchall()
+
+		print(row[0][0])
+
+		return jsonify({'Success': True, 'firstID': row[0][0]})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/save_vote', methods=['POST'])
+def save_vote():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	print(request.form)
+
+	session = request.form['sessionID']
+	ideaPriority = request.form['vote']
+	ideaID = request.form['ideaID']
+	participant = request.form['member']
+
+	data = (session, ideaID, participant, ideaPriority)
+	insert_query = 'INSERT INTO Votes (session, ideaID, participant, ideaPriority) VALUES (%s, %s, %s, %s)'
+
+	try:
+		cur.execute(insert_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+@app.route('/get_voting_results', methods=['POST'])
+def get_voting_results():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	print(request.form)
+
+	session = request.form['sessionID']
+	votingScheme = request.form['votingScheme']
+	ideasToVote = request.form['ideasToVote']
+
+	data = (session)
+	select_query = 'SELECT ideaID,ideaPriority FROM Votes WHERE session = %s'
+
+	try:
+		cur.execute(select_query, data)
+		votes = cur.fetchall()
+		procesed_votes = processVotes(votes,votingScheme,ideasToVote)
+		return jsonify({'Success': True, 'votes':procesed_votes})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+
+def processVotes(votes,votingScheme,ideasToVote):
+	voting_results = dict()
+	sorted_ideas = []
+
+	print("Votes",votes)
+
+	for vote in votes:
+		ideaID = vote[0]
+		ideaPriority = vote[1]
+
+		if ideaID in voting_results:
+			voting_results[ideaID][0] += 1
+			voting_results[ideaID][1] += ideaPriority
+		else:
+			voting_results[ideaID] = [1,ideaPriority,ideaID]
+
+	unsorted_votes = voting_results.values()
+	firstSortValues = sorted(unsorted_votes, key=lambda x: x[0], reverse = True)
+
+	print("FirstSorted",firstSortValues)
+
+	voting_results = collections.OrderedDict()
+
+	for vote in firstSortValues:
+		if vote[0] in voting_results:
+			voting_results[vote[0]].append(vote)
+		else:
+			voting_results[vote[0]] = [vote]
+
+	if votingScheme == "x_ideas":
+		for vote in firstSortValues:
+			for idea in vote:
+				sorted_ideas.append[idea[2]]
+		print(sorted_ideas)
+		return sorted_ideas
+
+	for votes in voting_results:
+		voting_results[votes] = sorted(voting_results[votes],key=lambda x: x[1])
+
+	for votes in voting_results:
+		for ideas in voting_results[votes]:
+			sorted_ideas.append(ideas[2])
+
+	print("VotingResults",sorted_ideas)
+
+	return sorted_ideas
 
 if __name__ == '__main__':
 	app.run(debug=True)
