@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS MEI;
+
 CREATE DATABASE MEI;
 
 USE MEI;
@@ -32,6 +34,23 @@ CREATE TABLE Session (
     PRIMARY KEY (sessionID)
 );
 
+CREATE TABLE GeneralStructure (
+    structureID INT AUTO_INCREMENT,
+    sessionID INT UNIQUE,
+    levels JSON,
+    PRIMARY KEY (structureID),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
+);
+
+CREATE TABLE MatrixValue (
+    sessionID INT,
+    iRow INT,
+    iColumn INT,
+    value INT,
+    PRIMARY KEY (sessionID, iRow, iColumn),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
+);
+
 CREATE TABLE Role (
     name VARCHAR(255) NOT NULL,
     PRIMARY KEY(name)
@@ -54,14 +73,15 @@ CREATE TABLE Member (
 
 CREATE TABLE IdeaType (
     name VARCHAR(255) NOT NULL,
+    defaultRelationQuestion VARCHAR(255) NOT NULL,
     PRIMARY KEY(name)
 );
 
-INSERT INTO IdeaType (name) VALUES ('Problem');
-INSERT INTO IdeaType (name) VALUES ('Objective');
-INSERT INTO IdeaType (name) VALUES ('Solution');
-INSERT INTO IdeaType (name) VALUES ('Action');
-INSERT INTO IdeaType (name) VALUES ('Feature');
+INSERT INTO IdeaType (name, defaultRelationQuestion) VALUES ('Problem', 'default question for Problem');
+INSERT INTO IdeaType (name, defaultRelationQuestion) VALUES ('Objective', 'default question for Objective');
+INSERT INTO IdeaType (name, defaultRelationQuestion) VALUES ('Solution', 'default question for Solution');
+INSERT INTO IdeaType (name, defaultRelationQuestion) VALUES ('Action', 'default question for Action');
+INSERT INTO IdeaType (name, defaultRelationQuestion) VALUES ('Feature', 'default question for Feature');
 
 CREATE TABLE Category (
     categoryID INT AUTO_INCREMENT,
@@ -102,6 +122,27 @@ CREATE TABLE Idea (
     PRIMARY KEY (ideaID)
 );
 
+CREATE TABLE QuestionAsked (
+    sessionID INT NOT NULL,
+    firstElement INT NOT NULL,
+    secondElement INT NOT NULL,
+    yesVotes INT NOT NULL,
+    noVotes INT NOT NULL,
+    PRIMARY KEY (sessionID, firstElement, secondElement),
+    FOREIGN KEY (sessionID) REFERENCES Session (sessionID),
+    FOREIGN KEY (firstElement) REFERENCES Idea (ideaID),
+    FOREIGN KEY (secondElement) REFERENCES Idea (ideaID)
+);
+
+CREATE TABLE RelationshipQuestion (
+    sessionID INT NOT NULL,
+    ideaType VARCHAR(255) NOT NULL,
+    customQuestion VARCHAR(255),
+    PRIMARY KEY (sessionID, ideaType),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID),
+    FOREIGN KEY (ideaType) REFERENCES IdeaType(name)
+);
+
 CREATE TABLE StructureQuestion (
     structureType VARCHAR(128),
     structureQuestion VARCHAR(255),
@@ -126,4 +167,3 @@ CREATE TABLE VotingDetails (
   ideasToVote INT
   PRIMARY KEY (session)
 );
-
