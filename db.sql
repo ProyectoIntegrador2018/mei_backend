@@ -164,6 +164,6 @@ CREATE TABLE Votes (
 CREATE TABLE VotingDetails (
   session INT NOT NULL,
   votingScheme VARCHAR(255),
-  ideasToVote INT
+  ideasToVote INT,
   PRIMARY KEY (session)
 );
