@@ -621,6 +621,13 @@ def session_has_structure():
 	sessionID = request.form['sessionID']
 	query = 'SELECT COUNT(*) FROM GeneralStructure WHERE sessionID = %s'
 
+	try:
+		cur.execute(query, (sessionID,))
+		count = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'hasStructure': count > 0})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
 	connection = mysql.connect()
