@@ -597,7 +597,7 @@ def save_matrix_structure():
 
 	insert_matrix = 'INSERT INTO MatrixValue (sessionID, iRow, iColumn, value) VALUES (%s, %s, %s, %s)'
 	insert_levels = 'INSERT INTO GeneralStructure (sessionID, levels) VALUES (%s, %s)'
-	levels_data = (sessionID, json.dumps(levels)) 
+	levels_data = (sessionID, json.dumps(levels))
 
 	try:
 		for i in range(1, len(reachabilityMatrix)):
@@ -743,7 +743,7 @@ def ideatype_question():
 		return jsonify({'Success': True, 'question': question})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
-    
+
 @app.route('/get_session_ideas_in_categories', methods=['POST'])
 def get_session_ideas_in_categories():
 	connection = mysql.connect()
@@ -763,11 +763,11 @@ def get_session_ideas_in_categories():
 
 				if clarification == None or clarification == "":
 					clarification = "No clarification"
-				
+
 				ideas.append({'ideaID': ideaID, 'statement': statement, 'clarification': clarification, 'ideaType': ideaType, 'ideaSessionNumber': ideaSessionNumber})
 
 			categories.append({'categoryID': categoryID, 'categoryName': categoryName, 'ideas': ideas})
-		
+
 		return jsonify({'Success': True, 'categories': categories})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
@@ -782,7 +782,7 @@ def set_voting_details():
 
 	print(sessionID,votingScheme,ideasToVote)
 
-	query = 'INSERT INTO VotingDetails (sessionID, votingScheme, ideasToVote) VALUES (%s, %s, %s)'
+	query = 'INSERT INTO VotingDetails (session, votingScheme, ideasToVote) VALUES (%s, %s, %s)'
 	data = (sessionID, votingScheme, ideasToVote)
 
 	try:
@@ -799,7 +799,7 @@ def get_voting_details():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 
-	query_details = 'SELECT * FROM VotingDetails WHERE sessionID = %s'
+	query_details = 'SELECT * FROM VotingDetails WHERE session = %s'
 	data = (sessionID)
 
 	try:
@@ -814,6 +814,7 @@ def get_voting_details():
 		else:
 			return jsonify({'Success': False, 'votingDetails': details})
 	except Exception as e:
+		print(e)
 		return jsonify({'Error': str(e)})
 
 @app.route('/get_parent_ideas', methods=['POST'])
