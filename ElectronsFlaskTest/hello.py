@@ -817,6 +817,25 @@ def get_voting_details():
 		print(e)
 		return jsonify({'Error': str(e)})
 
+@app.route('/getNumberOfParentIdeas', methods=['POST'])
+def getNumberOfParentIdeas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_parents = 'SELECT COUNT(ideaID) FROM Idea WHERE session = %s AND parentIdeaID IS NULL'
+	data = (sessionID)
+	try:
+		cur.execute(query_parents, data)
+		parent_rows = cur.fetchall()
+
+		parentIdeas = parent_rows[0][0]
+		print(parentIdeas,"getNumberOfParentIdeas")
+
+		return jsonify({'Success': True, 'parentIdeas': parentIdeas})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
 @app.route('/get_parent_ideas', methods=['POST'])
 def get_parent_ideas():
 	connection = mysql.connect()
