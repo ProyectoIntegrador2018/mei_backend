@@ -487,7 +487,8 @@ def get_all_session_ideas_in():
 	print(ideasToStructure)
 
 	query_ideas = 'SELECT * FROM Idea WHERE session = %s AND ideaID IN (' + ideasToStructure + ') ORDER BY ideaSessionNumber'
-	data = (sessionID)
+	print(query_ideas)
+	data = (sessionID,)
 	try:
 		cur.execute(query_ideas, data)
 		rows = cur.fetchall()
@@ -653,13 +654,6 @@ def session_has_structure():
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
-	try:
-		cur.execute(query, (sessionID,))
-		count = cur.fetchall()[0][0]
-		return jsonify({'Success': True, 'hasStructure': count > 0})
-	except Exception as e:
-		raise jsonify({'Error': str(e)})
-
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
 	connection = mysql.connect()
@@ -770,8 +764,10 @@ def delete_structure_matrix():
 		cur.execute(delete_structure, data)
 		cur.execute(delete_matrix, data)
 		cur.execute(delete_questions_asked, data)
-		return jsonify({'Success': True, 'hasCategories': count > 0})
+		connection.commit()
+		return jsonify({'Success': True})
 	except Exception as e:
+		print(e)
 		raise jsonify({'Error': str(e)})
 
 @app.route('/update_category_name', methods=['POST'])
