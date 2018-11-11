@@ -463,6 +463,25 @@ def get_all_session_ideas():
 	connection = mysql.connect()
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
+
+	query_ideas = 'SELECT * FROM Idea WHERE session = %s ORDER BY ideaSessionNumber'
+	data = (sessionID)
+	try:
+		cur.execute(query_ideas, data)
+		rows = cur.fetchall()
+
+		ideas = [dict((cur.description[i][0], value)
+			for i, value in enumerate(row)) for row in rows]
+
+		return jsonify({'Success': True, 'Ideas': ideas})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/get_all_session_ideas_in', methods=['POST'])
+def get_all_session_ideas_in():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
 	ideasToStructure = request.form['ideasToStructure']
 
 	print(ideasToStructure)
@@ -481,6 +500,7 @@ def get_all_session_ideas():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+
 
 @app.route('/join_ideas', methods=['POST'])
 def join_ideas():
