@@ -477,6 +477,32 @@ def get_all_session_ideas():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_all_session_ideas_in', methods=['POST'])
+def get_all_session_ideas_in():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	ideasToStructure = request.form['ideasToStructure']
+
+	print(ideasToStructure)
+
+	query_ideas = 'SELECT * FROM Idea WHERE session = %s AND ideaID IN (' + ideasToStructure + ') ORDER BY ideaSessionNumber'
+	print(query_ideas)
+	data = (sessionID,)
+	try:
+		cur.execute(query_ideas, data)
+		rows = cur.fetchall()
+		print(rows)
+
+		ideas = [dict((cur.description[i][0], value)
+			for i, value in enumerate(row)) for row in rows]
+
+		return jsonify({'Success': True, 'Ideas': ideas})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+
 @app.route('/join_ideas', methods=['POST'])
 def join_ideas():
 	connection = mysql.connect()
@@ -628,13 +654,6 @@ def session_has_structure():
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
-	try:
-		cur.execute(query, (sessionID,))
-		count = cur.fetchall()[0][0]
-		return jsonify({'Success': True, 'hasStructure': count > 0})
-	except Exception as e:
-		raise jsonify({'Error': str(e)})
-
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
 	connection = mysql.connect()
@@ -680,7 +699,7 @@ def save_priorities():
 	questionsAsked = data['questionsAsked']
 
 	insert_priorities = 'INSERT INTO Priority (sessionID, priorities) VALUES (%s, %s)'
-	priorities_data = (sessionID, json.dumps(priorities)) 
+	priorities_data = (sessionID, json.dumps(priorities))
 
 	try:
 		priority_num = 1
@@ -745,8 +764,27 @@ def delete_structure_matrix():
 		cur.execute(delete_structure, data)
 		cur.execute(delete_matrix, data)
 		cur.execute(delete_questions_asked, data)
-		return jsonify({'Success': True, 'hasCategories': count > 0})
+		connection.commit()
+		return jsonify({'Success': True})
 	except Exception as e:
+		print(e)
+		raise jsonify({'Error': str(e)})
+
+@app.route('/update_idea', methods=['POST'])
+def update_idea():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	print(request.form)
+	ideaID = request.form['ideaID']
+	statement = request.form['statement']
+	author = request.form['author'] if request.form['author'] != '' else None
+	query = 'UPDATE Idea SET idea = %s, participant = %s WHERE ideaID = %s'
+	try:
+		cur.execute(query, (statement, author, ideaID))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
 		raise jsonify({'Error': str(e)})
 
 @app.route('/update_category_name', methods=['POST'])
