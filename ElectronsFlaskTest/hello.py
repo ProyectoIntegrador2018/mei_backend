@@ -628,6 +628,35 @@ def session_has_structure():
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
+@app.route('/get_session_structure', methods=['POST'])
+def get_session_structure():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT * FROM GeneralStructure WHERE sessionID = %s'
+
+	try:
+		cur.execute(query, (sessionID,))
+		structure = cur.fetchall()
+		return jsonify({'Success': True, 'GeneralStructure': structure})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_structure_matrix', methods=['POST'])
+def get_structure_matrix():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	get_matrix = 'SELECT * FROM MatrixValue WHERE sessionID = %s AND value = 1'
+	data = (sessionID,)
+	try:
+		cur.execute(get_matrix, data)
+		matrix = cur.fetchall()
+		print(matrix)
+		return jsonify({'Success': True, 'MatrixValue': matrix})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
 	connection = mysql.connect()
