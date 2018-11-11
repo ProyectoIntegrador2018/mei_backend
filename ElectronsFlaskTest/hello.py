@@ -463,18 +463,23 @@ def get_all_session_ideas():
 	connection = mysql.connect()
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
+	ideasToStructure = request.form['ideasToStructure']
 
-	query_ideas = 'SELECT * FROM Idea WHERE session = %s ORDER BY ideaSessionNumber'
+	print(ideasToStructure)
+
+	query_ideas = 'SELECT * FROM Idea WHERE session = %s AND ideaID IN (' + ideasToStructure + ') ORDER BY ideaSessionNumber'
 	data = (sessionID)
 	try:
 		cur.execute(query_ideas, data)
 		rows = cur.fetchall()
+		print(rows)
 
 		ideas = [dict((cur.description[i][0], value)
 			for i, value in enumerate(row)) for row in rows]
 
 		return jsonify({'Success': True, 'Ideas': ideas})
 	except Exception as e:
+		print(e)
 		return jsonify({'Error': str(e)})
 
 @app.route('/join_ideas', methods=['POST'])
@@ -680,7 +685,7 @@ def save_priorities():
 	questionsAsked = data['questionsAsked']
 
 	insert_priorities = 'INSERT INTO Priority (sessionID, priorities) VALUES (%s, %s)'
-	priorities_data = (sessionID, json.dumps(priorities)) 
+	priorities_data = (sessionID, json.dumps(priorities))
 
 	try:
 		priority_num = 1
