@@ -5,7 +5,8 @@ DROP PROCEDURE IF EXISTS GetCategoriesIDForSession;
 DROP PROCEDURE IF EXISTS GetIdeasInCategory;
 DROP PROCEDURE IF EXISTS UpdateCategoryName;
 DROP PROCEDURE IF EXISTS UpdateCategoryForIdea;
-DROP PROCEDURE IF EXISTS AddCategoriesQuestion;
+DROP PROCEDURE IF EXISTS UpdatePriorityForIdea;
+DROP PROCEDURE IF EXISTS AddPrioritiesQuestion;
 
 -- Create Element
 DELIMITER //
@@ -69,10 +70,19 @@ BEGIN
 	WHERE ideaID = p_ideaID;
 END //
 
--- Create question answered for categories structuring
+-- Create question answered for priorityes structuring
 DELIMITER //
-CREATE PROCEDURE AddCategoriesQuestion (IN p_sessionID INT, IN p_firstElementID INT, IN p_secondElementID INT, IN p_yesVotes INT, IN p_noVotes INT, IN p_answer BOOL)
+CREATE PROCEDURE AddPrioritiesQuestion (IN p_sessionID INT, IN p_firstElementID INT, IN p_secondElementID INT, IN p_yesVotes INT, IN p_noVotes INT, IN p_sameVotes INT, IN p_answer INT)
 BEGIN
-	INSERT INTO CategoryQuestion (sessionID, firstElementID, secondElementID, yesVotes, noVotes, answer)
-	VALUES (p_sessionID, p_firstElementID, p_secondElementID, p_yesVotes, p_noVotes, p_answer);
+	INSERT INTO PriorityQuestion (sessionID, firstElementID, secondElementID, yesVotes, noVotes, sameVotes, answer)
+	VALUES (p_sessionID, p_firstElementID, p_secondElementID, p_yesVotes, p_noVotes, p_sameVotes, p_answer);
+END //
+
+-- Update priority for ideas
+DELIMITER //
+CREATE PROCEDURE UpdatePriorityForIdea (IN p_priority INT, IN p_ideaID INT)
+BEGIN
+	UPDATE Idea
+	SET priority = p_priority
+	WHERE ideaID = p_ideaID;
 END //

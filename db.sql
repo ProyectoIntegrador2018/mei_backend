@@ -91,6 +91,25 @@ CREATE TABLE Category (
     FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
 );
 
+CREATE TABLE Idea (
+    ideaID INT AUTO_INCREMENT,
+    parentIdeaID INT,
+    idea VARCHAR(510) NOT NULL,
+    clarification  VARCHAR(255),
+    participant VARCHAR(255),
+    type VARCHAR(255) NOT NULL,
+    session INT NOT NULL,
+    ideaSessionNumber INT NOT NULL,
+    categoryID INT,
+    priority INT,
+    FOREIGN KEY(session, participant) REFERENCES Member(session, email),
+    FOREIGN KEY (type) REFERENCES IdeaType(name),
+    FOREIGN KEY (session) REFERENCES Session(sessionID),
+    FOREIGN KEY (parentIdeaID) REFERENCES Idea (ideaID),
+    FOREIGN KEY (categoryID) REFERENCES Category (categoryID),
+    PRIMARY KEY (ideaID)
+);
+
 CREATE TABLE CategoryQuestion (
     sessionID INT NOT NULL,
     firstElementID INT NOT NULL,
@@ -104,22 +123,26 @@ CREATE TABLE CategoryQuestion (
     FOREIGN KEY (secondElementID) REFERENCES Idea(ideaID)
 );
 
-CREATE TABLE Idea (
-    ideaID INT AUTO_INCREMENT,
-    parentIdeaID INT,
-    idea VARCHAR(510) NOT NULL,
-    clarification  VARCHAR(255),
-    participant VARCHAR(255),
-    type VARCHAR(255) NOT NULL,
-    session INT NOT NULL,
-    ideaSessionNumber INT NOT NULL,
-    categoryID INT,
-    FOREIGN KEY(session, participant) REFERENCES Member(session, email),
-    FOREIGN KEY (type) REFERENCES IdeaType(name),
-    FOREIGN KEY (session) REFERENCES Session(sessionID),
-    FOREIGN KEY (parentIdeaID) REFERENCES Idea (ideaID),
-    FOREIGN KEY (categoryID) REFERENCES Category (categoryID),
-    PRIMARY KEY (ideaID)
+CREATE TABLE PriorityQuestion (
+    sessionID INT NOT NULL,
+    firstElementID INT NOT NULL,
+    secondElementID INT NOT NULL,
+    yesVotes INT NOT NULL,
+    noVotes INT NOT NULL,
+    sameVotes INT NOT NULL,
+    answer INT NOT NULL,
+    PRIMARY KEY (sessionID, firstElementID, secondElementID),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID),
+    FOREIGN KEY (firstElementID) REFERENCES Idea(ideaID),
+    FOREIGN KEY (secondElementID) REFERENCES Idea(ideaID)
+);
+
+CREATE TABLE Priority (
+    priorityID INT AUTO_INCREMENT,
+    sessionID INT UNIQUE,
+    priorities JSON,
+    PRIMARY KEY (priorityID),
+    FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
 );
 
 CREATE TABLE QuestionAsked (
