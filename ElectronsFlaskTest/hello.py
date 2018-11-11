@@ -770,6 +770,23 @@ def delete_structure_matrix():
 		print(e)
 		raise jsonify({'Error': str(e)})
 
+@app.route('/update_idea', methods=['POST'])
+def update_idea():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	print(request.form)
+	ideaID = request.form['ideaID']
+	statement = request.form['statement']
+	author = request.form['author'] if request.form['author'] != '' else None
+	query = 'UPDATE Idea SET idea = %s, participant = %s WHERE ideaID = %s'
+	try:
+		cur.execute(query, (statement, author, ideaID))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		raise jsonify({'Error': str(e)})
+
 @app.route('/update_category_name', methods=['POST'])
 def update_category_name():
 	connection = mysql.connect()
