@@ -913,7 +913,7 @@ def get_parent_ideas():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 
-	query_parents = 'SELECT ideaID,idea FROM Idea WHERE session = %s AND parentIdeaID IS NULL ORDER BY ideaID'
+	query_parents = 'SELECT ideaID,idea,ideaSessionNumber FROM Idea WHERE session = %s AND parentIdeaID IS NULL ORDER BY ideaID'
 	data = (sessionID)
 	try:
 		cur.execute(query_parents, data)
@@ -921,36 +921,16 @@ def get_parent_ideas():
 		print(parent_rows)
 		ideasIds = []
 		ideasTexts = []
+		ideaSessionNumbers = []
 
 		for parent in parent_rows:
-			parentID = parent[0]
-			print(parentID)
-			parentText = parent[1]
-			print(parentText)
-			ideasIds.append(parentID)
-			ideasTexts.append(parentText)
+			ideasIds.append(parent[0])
+			ideasTexts.append(parent[1])
+			ideaSessionNumbers.append(parent[2])
 
 		print(ideasIds,ideasTexts)
 
-		return jsonify({'Success': True, 'ideasIDs': ideasIds, 'ideasText':ideasTexts})
-	except Exception as e:
-		return jsonify({'Error': str(e)})
-
-@app.route('/get_first_ideaID', methods=['POST'])
-def get_first_ideaID():
-	connection = mysql.connect()
-	cur = connection.cursor()
-	sessionID = request.form['sessionID']
-
-	query_parents = 'SELECT ideaID FROM Idea WHERE session = %s ORDER BY ideaID LIMIT 1'
-	data = (sessionID)
-	try:
-		cur.execute(query_parents, data)
-		row = cur.fetchall()
-
-		print(row[0][0])
-
-		return jsonify({'Success': True, 'firstID': row[0][0]})
+		return jsonify({'Success': True, 'ideasIDs': ideasIds, 'ideasText':ideasTexts, 'ideaSessionNumbers':ideaSessionNumbers})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
