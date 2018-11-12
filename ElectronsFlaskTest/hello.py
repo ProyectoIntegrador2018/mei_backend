@@ -477,6 +477,32 @@ def get_all_session_ideas():
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
+@app.route('/get_all_session_ideas_in', methods=['POST'])
+def get_all_session_ideas_in():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	ideasToStructure = request.form['ideasToStructure']
+
+	print(ideasToStructure)
+
+	query_ideas = 'SELECT * FROM Idea WHERE session = %s AND ideaID IN (' + ideasToStructure + ') ORDER BY ideaSessionNumber'
+	print(query_ideas)
+	data = (sessionID,)
+	try:
+		cur.execute(query_ideas, data)
+		rows = cur.fetchall()
+		print(rows)
+
+		ideas = [dict((cur.description[i][0], value)
+			for i, value in enumerate(row)) for row in rows]
+
+		return jsonify({'Success': True, 'Ideas': ideas})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+
 @app.route('/join_ideas', methods=['POST'])
 def join_ideas():
 	connection = mysql.connect()
@@ -628,10 +654,18 @@ def session_has_structure():
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
+@app.route('/session_has_priority', methods=['POST'])
+def session_has_priority():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT COUNT(*) FROM Priority WHERE sessionID = %s'
+	data = (sessionID,)
+	count = -1
 	try:
-		cur.execute(query, (sessionID,))
+		cur.execute(query, data)
 		count = cur.fetchall()[0][0]
-		return jsonify({'Success': True, 'hasStructure': count > 0})
+		return jsonify({'Success': True, 'hasPriority': count > 0})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
@@ -647,6 +681,23 @@ def get_session_structure():
 		structure = cur.fetchall()
 		return jsonify({'Success': True, 'GeneralStructure': structure})
 	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_session_priority', methods=['POST'])
+def get_session_priority():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	print(sessionID)
+	query = 'SELECT * FROM Priority WHERE sessionID = %s'
+
+	try:
+		cur.execute(query, (sessionID,))
+		row = cur.fetchall()[0]
+		print(row)
+		return jsonify({'Success': True, 'Priority': row[2]})
+	except Exception as e:
+		print(e)
 		raise jsonify({'Error': str(e)})
 
 @app.route('/get_structure_matrix', methods=['POST'])
@@ -709,7 +760,7 @@ def save_priorities():
 	questionsAsked = data['questionsAsked']
 
 	insert_priorities = 'INSERT INTO Priority (sessionID, priorities) VALUES (%s, %s)'
-	priorities_data = (sessionID, json.dumps(priorities)) 
+	priorities_data = (sessionID, json.dumps(priorities))
 
 	try:
 		priority_num = 1
@@ -774,8 +825,27 @@ def delete_structure_matrix():
 		cur.execute(delete_structure, data)
 		cur.execute(delete_matrix, data)
 		cur.execute(delete_questions_asked, data)
-		return jsonify({'Success': True, 'hasCategories': count > 0})
+		connection.commit()
+		return jsonify({'Success': True})
 	except Exception as e:
+		print(e)
+		raise jsonify({'Error': str(e)})
+
+@app.route('/update_idea', methods=['POST'])
+def update_idea():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	print(request.form)
+	ideaID = request.form['ideaID']
+	statement = request.form['statement']
+	author = request.form['author'] if request.form['author'] != '' else None
+	query = 'UPDATE Idea SET idea = %s, participant = %s WHERE ideaID = %s'
+	try:
+		cur.execute(query, (statement, author, ideaID))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
 		raise jsonify({'Error': str(e)})
 
 @app.route('/update_category_name', methods=['POST'])
@@ -814,10 +884,13 @@ def get_session_ideas_in_categories():
 	try:
 		cur.callproc('GetCategoriesIDForSession', (sessionID,))
 		resultCategories = cur.fetchall()
+		print(resultCategories)
 		for category in resultCategories:
 			categoryID, categoryName = category[0], category[1]
+			print(sessionID, categoryID)
 			cur.callproc('GetIdeasInCategory', (sessionID, categoryID))
 			resultIdeas = cur.fetchall()
+			print(resultIdeas)
 			ideas = []
 			for idea in resultIdeas:
 				ideaID, statement, clarification, ideaType, ideaSessionNumber = idea[0], idea[1], idea[2], idea[3], idea[4]
@@ -1038,6 +1111,43 @@ def processVotes(votes,votingScheme,ideasToVote):
 	print("VotingResults",sorted_ideas)
 
 	return sorted_ideas
+
+@app.route('/reset_votes', methods=['POST'])
+def reset_votes():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	session = request.form['sessionID']
+
+	data = (session)
+	delete_from_votes_query = 'DELETE FROM Votes WHERE session = %s'
+
+	try:
+		cur.execute(delete_from_votes_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+@app.route('/reset_voting_details', methods=['POST'])
+def reset_voting_details():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	session = request.form['sessionID']
+
+	data = (session)
+	delete_from_details_query = 'DELETE FROM VotingDetails WHERE session = %s'
+
+	try:
+		cur.execute(delete_from_details_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
