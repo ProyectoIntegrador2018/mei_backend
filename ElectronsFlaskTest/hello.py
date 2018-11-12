@@ -597,7 +597,7 @@ def save_matrix_structure():
 
 	insert_matrix = 'INSERT INTO MatrixValue (sessionID, iRow, iColumn, value) VALUES (%s, %s, %s, %s)'
 	insert_levels = 'INSERT INTO GeneralStructure (sessionID, levels) VALUES (%s, %s)'
-	levels_data = (sessionID, json.dumps(levels)) 
+	levels_data = (sessionID, json.dumps(levels))
 
 	try:
 		for i in range(1, len(reachabilityMatrix)):
@@ -620,6 +620,13 @@ def session_has_structure():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 	query = 'SELECT COUNT(*) FROM GeneralStructure WHERE sessionID = %s'
+	data = (sessionID,)
+	try:
+		cur.execute(query, data)
+		count = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'hasStructure': count > 0})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
 
 	try:
 		cur.execute(query, (sessionID,))
@@ -678,7 +685,6 @@ def save_categories():
 	data = request.get_json()
 	sessionID = int(data['sessionID'])
 	categories = data['categories']
-	questions = data['questions']
 
 	try:
 		for category in categories:
@@ -687,11 +693,39 @@ def save_categories():
 			for ideaID in categories[str(category)]:
 				cur.callproc('UpdateCategoryForIdea', (int(categoryID), int(ideaID)))
 
-		for question in questions:
+		connection.commit()
+		return jsonify({'Success': True	})
+	except Exception as e:
+		return jsonify({'Error': str(e)})
+
+@app.route('/save_priorities', methods=['POST'])
+def save_priorities():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	data = request.get_json()
+	sessionID = int(data['sessionID'])
+	priorities = data['priorities']
+	questionsAsked = data['questionsAsked']
+
+	insert_priorities = 'INSERT INTO Priority (sessionID, priorities) VALUES (%s, %s)'
+	priorities_data = (sessionID, json.dumps(priorities)) 
+
+	try:
+		priority_num = 1
+		for priority in priorities:
+			for ideaID in priority:
+				cur.callproc('UpdatePriorityForIdea', (int(priority_num), int(ideaID)))
+
+			priority_num = priority_num + 1
+
+		for question in questionsAsked:
 			firstElementID, secondElementID = question['firstElement'], question['secondElement']
-			yesVotes, noVotes = question['yesVotes'], question['noVotes']
+			higherVotes, lowerVotes, sameVotes = question['higherVotes'], question['lowerVotes'], question['sameVotes']
 			answer = question['answer']
-			cur.callproc('AddCategoriesQuestion', (sessionID, firstElementID, secondElementID, yesVotes, noVotes, answer))
+			cur.callproc('AddPrioritiesQuestion', (sessionID, firstElementID, secondElementID, higherVotes, lowerVotes, sameVotes, answer))
+
+		cur.execute(insert_priorities, priorities_data)
 
 		connection.commit()
 		return jsonify({'Success': True	})
@@ -704,12 +738,10 @@ def delete_session_categories():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 	delete_category = 'DELETE FROM Category WHERE sessionID = %s'
-	delete_questions = 'DELETE FROM CategoryQuestion WHERE sessionID = %s'
 	remove_category_from_ideas = 'UPDATE Idea SET CategoryID = %s WHERE session = %s'
 	try:
 		cur.execute(remove_category_from_ideas, (None, sessionID))
 		cur.execute(delete_category, (sessionID,))
-		cur.execute(delete_questions, (sessionID,))
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
@@ -725,7 +757,7 @@ def session_has_categories():
 	try:
 		cur.execute(query, data)
 		count = cur.fetchall()[0][0]
-		return jsonify({'Success': True, 'hasStructure': count > 0})
+		return jsonify({'Success': True, 'hasCategories': count > 0})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
@@ -772,7 +804,7 @@ def ideatype_question():
 		return jsonify({'Success': True, 'question': question})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
-    
+
 @app.route('/get_session_ideas_in_categories', methods=['POST'])
 def get_session_ideas_in_categories():
 	connection = mysql.connect()
@@ -792,11 +824,11 @@ def get_session_ideas_in_categories():
 
 				if clarification == None or clarification == "":
 					clarification = "No clarification"
-				
+
 				ideas.append({'ideaID': ideaID, 'statement': statement, 'clarification': clarification, 'ideaType': ideaType, 'ideaSessionNumber': ideaSessionNumber})
 
 			categories.append({'categoryID': categoryID, 'categoryName': categoryName, 'ideas': ideas})
-		
+
 		return jsonify({'Success': True, 'categories': categories})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
@@ -805,13 +837,14 @@ def get_session_ideas_in_categories():
 def set_voting_details():
 	connection = mysql.connect()
 	cur = connection.cursor()
+	print(request.form)
 	sessionID = request.form['sessionID']
 	votingScheme = request.form['votingScheme']
 	ideasToVote = request.form['ideasToVote']
 
 	print(sessionID,votingScheme,ideasToVote)
 
-	query = 'INSERT INTO VotingDetails (sessionID, votingScheme, ideasToVote) VALUES (%s, %s, %s)'
+	query = 'INSERT INTO VotingDetails (session, votingScheme, ideasToVote) VALUES (%s, %s, %s)'
 	data = (sessionID, votingScheme, ideasToVote)
 
 	try:
@@ -828,7 +861,7 @@ def get_voting_details():
 	cur = connection.cursor()
 	sessionID = request.form['sessionID']
 
-	query_details = 'SELECT * FROM VotingDetails WHERE sessionID = %s'
+	query_details = 'SELECT * FROM VotingDetails WHERE session = %s'
 	data = (sessionID)
 
 	try:
@@ -842,6 +875,26 @@ def get_voting_details():
 			return jsonify({'Success': True, 'votingDetails': details})
 		else:
 			return jsonify({'Success': False, 'votingDetails': details})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+@app.route('/getNumberOfParentIdeas', methods=['POST'])
+def getNumberOfParentIdeas():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+
+	query_parents = 'SELECT COUNT(ideaID) FROM Idea WHERE session = %s AND parentIdeaID IS NULL'
+	data = (sessionID)
+	try:
+		cur.execute(query_parents, data)
+		parent_rows = cur.fetchall()
+
+		parentIdeas = parent_rows[0][0]
+		print(parentIdeas,"getNumberOfParentIdeas")
+
+		return jsonify({'Success': True, 'parentIdeas': parentIdeas})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
 
