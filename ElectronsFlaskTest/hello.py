@@ -654,6 +654,67 @@ def session_has_structure():
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
 
+@app.route('/session_has_priority', methods=['POST'])
+def session_has_priority():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT COUNT(*) FROM Priority WHERE sessionID = %s'
+	data = (sessionID,)
+	count = -1
+	try:
+		cur.execute(query, data)
+		count = cur.fetchall()[0][0]
+		return jsonify({'Success': True, 'hasPriority': count > 0})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_session_structure', methods=['POST'])
+def get_session_structure():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	query = 'SELECT * FROM GeneralStructure WHERE sessionID = %s'
+
+	try:
+		cur.execute(query, (sessionID,))
+		structure = cur.fetchall()
+		return jsonify({'Success': True, 'GeneralStructure': structure})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_session_priority', methods=['POST'])
+def get_session_priority():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	print(sessionID)
+	query = 'SELECT * FROM Priority WHERE sessionID = %s'
+
+	try:
+		cur.execute(query, (sessionID,))
+		row = cur.fetchall()[0]
+		print(row)
+		return jsonify({'Success': True, 'Priority': row[2]})
+	except Exception as e:
+		print(e)
+		raise jsonify({'Error': str(e)})
+
+@app.route('/get_structure_matrix', methods=['POST'])
+def get_structure_matrix():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	get_matrix = 'SELECT * FROM MatrixValue WHERE sessionID = %s AND value = 1'
+	data = (sessionID,)
+	try:
+		cur.execute(get_matrix, data)
+		matrix = cur.fetchall()
+		print(matrix)
+		return jsonify({'Success': True, 'MatrixValue': matrix})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
 	connection = mysql.connect()
@@ -823,10 +884,13 @@ def get_session_ideas_in_categories():
 	try:
 		cur.callproc('GetCategoriesIDForSession', (sessionID,))
 		resultCategories = cur.fetchall()
+		print(resultCategories)
 		for category in resultCategories:
 			categoryID, categoryName = category[0], category[1]
+			print(sessionID, categoryID)
 			cur.callproc('GetIdeasInCategory', (sessionID, categoryID))
 			resultIdeas = cur.fetchall()
+			print(resultIdeas)
 			ideas = []
 			for idea in resultIdeas:
 				ideaID, statement, clarification, ideaType, ideaSessionNumber = idea[0], idea[1], idea[2], idea[3], idea[4]
