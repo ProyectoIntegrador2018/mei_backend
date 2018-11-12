@@ -1048,5 +1048,42 @@ def processVotes(votes,votingScheme,ideasToVote):
 
 	return sorted_ideas
 
+@app.route('/reset_votes', methods=['POST'])
+def reset_votes():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	session = request.form['sessionID']
+
+	data = (session)
+	delete_from_votes_query = 'DELETE FROM Votes WHERE session = %s'
+
+	try:
+		cur.execute(delete_from_votes_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+@app.route('/reset_voting_details', methods=['POST'])
+def reset_voting_details():
+	connection = mysql.connect()
+	cur = connection.cursor()
+
+	session = request.form['sessionID']
+
+	data = (session)
+	delete_from_details_query = 'DELETE FROM VotingDetails WHERE session = %s'
+
+	try:
+		cur.execute(delete_from_details_query, data)
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		print(e)
+		return jsonify({'Error': str(e)})
+
+
 if __name__ == '__main__':
 	app.run(debug=True)
