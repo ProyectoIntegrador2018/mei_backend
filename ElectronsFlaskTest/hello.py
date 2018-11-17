@@ -61,6 +61,9 @@ def get_session_info():
 		return jsonify({'Success' : True, 'userID' : userID, 'name' : name})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_user_projects', methods=['POST'])
 def get_user_projects():
@@ -83,6 +86,9 @@ def get_user_projects():
 		return jsonify({'Success' : True, 'Projects' : r})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/create_user', methods=['POST'])
 def create_user():
@@ -111,6 +117,9 @@ def create_user():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/login_user', methods=['POST'])
 def login_user():
@@ -143,6 +152,9 @@ def login_user():
 
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/save_project_id', methods=['POST'])
 def save_project_id():
@@ -167,6 +179,9 @@ def get_project_info():
 		return jsonify({'Success': 'True', 'projectID': row[0], 'projectName': row[1], 'organization': row[2], 'creationDate': creationDate, 'description': row[4]})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/edit_project', methods=['POST'])
 def edit_project():
@@ -188,6 +203,9 @@ def edit_project():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/create_project', methods=['POST'])
 def create_project():
@@ -210,6 +228,9 @@ def create_project():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_project_sessions', methods=['POST'])
 def  get_project_sessions():
@@ -229,6 +250,9 @@ def  get_project_sessions():
 		return jsonify({'Success' : True, 'Sessions' : r})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/create_session', methods=['POST'])
 def create_session():
@@ -251,6 +275,9 @@ def create_session():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/delete_participant', methods=['POST'])
 def delete_participant():
@@ -269,6 +296,9 @@ def delete_participant():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/edit_participant', methods=['POST'])
 def edit_participant():
@@ -290,6 +320,9 @@ def edit_participant():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/create_participant', methods=['POST'])
 def create_participant():
@@ -311,6 +344,9 @@ def create_participant():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_participants', methods=['POST'])
 def get_session_participants():
@@ -331,6 +367,9 @@ def get_session_participants():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_participant_information', methods=['POST'])
 def get_participant_information():
@@ -350,6 +389,9 @@ def get_participant_information():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/copy_session_participants', methods=['POST'])
 def copy_session_participants():
@@ -379,6 +421,9 @@ def copy_session_participants():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_data', methods=['POST'])
 def get_session_data():
@@ -396,6 +441,9 @@ def get_session_data():
 		return jsonify({'Success': 'True', 'sessionID': row[0], 'name': row[1], 'summary': row[2], 'triggeringQuestion'	: row[3], 'creationDate': creationDate})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_participant_types', methods=['POST'])
 def get_participant_types():
@@ -411,6 +459,9 @@ def get_participant_types():
 		return jsonify({'Success': True, 'Roles': r})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/edit_session', methods=['POST'])
 def edit_session():
@@ -431,6 +482,9 @@ def edit_session():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_ideas', methods=['POST'])
 def get_session_ideas():
@@ -457,6 +511,9 @@ def get_session_ideas():
 		return jsonify({'Success': True, 'Ideas': ideas})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_all_session_ideas', methods=['POST'])
 def get_all_session_ideas():
@@ -476,6 +533,9 @@ def get_all_session_ideas():
 		return jsonify({'Success': True, 'Ideas': ideas})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_all_session_ideas_in', methods=['POST'])
 def get_all_session_ideas_in():
@@ -501,13 +561,15 @@ def get_all_session_ideas_in():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
-
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/join_ideas', methods=['POST'])
 def join_ideas():
 	connection = mysql.connect()
 	cur = connection.cursor()
-	query = 'Update IDEA SET parentIdeaID = %s WHERE ideaID = %s'
+	query = 'Update Idea SET parentIdeaID = %s WHERE ideaID = %s'
 	try:
 		# Reset all parent/child relationship
 		for key, value in request.form.items():
@@ -529,6 +591,9 @@ def join_ideas():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error', str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/update_clarification', methods=['POST'])
 def update_clarification():
@@ -546,6 +611,9 @@ def update_clarification():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/create_element', methods=['POST'])
 def create_element():
@@ -564,6 +632,9 @@ def create_element():
 		return jsonify({'Success': True, 'ideaID': row[0][0], 'ideaNumber': row[0][1]})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/start_general_structure', methods=['POST'])
 def start_general_structure():
@@ -608,6 +679,9 @@ def save_votes():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/save_matrix_structure', methods=['POST'])
 def save_matrix_structure():
@@ -639,6 +713,9 @@ def save_matrix_structure():
 		return jsonify({'Success': True})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/session_has_structure', methods=['POST'])
 def session_has_structure():
@@ -653,6 +730,9 @@ def session_has_structure():
 		return jsonify({'Success': True, 'hasStructure': count > 0})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/session_has_priority', methods=['POST'])
 def session_has_priority():
@@ -668,6 +748,9 @@ def session_has_priority():
 		return jsonify({'Success': True, 'hasPriority': count > 0})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_structure', methods=['POST'])
 def get_session_structure():
@@ -682,6 +765,9 @@ def get_session_structure():
 		return jsonify({'Success': True, 'GeneralStructure': structure})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_priority', methods=['POST'])
 def get_session_priority():
@@ -699,6 +785,9 @@ def get_session_priority():
 	except Exception as e:
 		print(e)
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_structure_matrix', methods=['POST'])
 def get_structure_matrix():
@@ -714,6 +803,9 @@ def get_structure_matrix():
 		return jsonify({'Success': True, 'MatrixValue': matrix})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_structure_question', methods=['POST'])
 def get_structure_question():
@@ -727,6 +819,9 @@ def get_structure_question():
 		return jsonify({'Success': True, 'question': question})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/save_categories', methods=['POST'])
 def save_categories():
@@ -748,6 +843,9 @@ def save_categories():
 		return jsonify({'Success': True	})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/save_priorities', methods=['POST'])
 def save_priorities():
@@ -757,6 +855,9 @@ def save_priorities():
 	data = request.get_json()
 	sessionID = int(data['sessionID'])
 	priorities = data['priorities']
+
+	print(priorities)
+	
 	questionsAsked = data['questionsAsked']
 
 	insert_priorities = 'INSERT INTO Priority (sessionID, priorities) VALUES (%s, %s)'
@@ -782,6 +883,9 @@ def save_priorities():
 		return jsonify({'Success': True	})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/delete_session_categories', methods=['POST'])
 def delete_session_categories():
@@ -797,6 +901,29 @@ def delete_session_categories():
 		return jsonify({'Success': True})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
+
+@app.route('/delete_session_priorities', methods=['POST'])
+def delete_session_priorities():
+	connection = mysql.connect()
+	cur = connection.cursor()
+	sessionID = request.form['sessionID']
+	delete_priority = 'DELETE FROM Priority WHERE sessionID = %s'
+	delete_priority_questions = 'DELETE FROM Priority WHERE sessionID = %s'
+	remove_priority_from_ideas = 'UPDATE Idea SET priority = %s WHERE session = %s'
+	try:
+		cur.execute(remove_priority_from_ideas, (None, sessionID))
+		cur.execute(delete_priority, (sessionID,))
+		cur.execute(delete_priority_questions, (sessionID,))
+		connection.commit()
+		return jsonify({'Success': True})
+	except Exception as e:
+		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/session_has_categories', methods=['POST'])
 def session_has_categories():
@@ -811,6 +938,9 @@ def session_has_categories():
 		return jsonify({'Success': True, 'hasCategories': count > 0})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/delete_structure_matrix', methods=['POST'])
 def delete_structure_matrix():
@@ -830,6 +960,9 @@ def delete_structure_matrix():
 	except Exception as e:
 		print(e)
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/update_idea', methods=['POST'])
 def update_idea():
@@ -847,6 +980,9 @@ def update_idea():
 	except Exception as e:
 		print(e)
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/update_category_name', methods=['POST'])
 def update_category_name():
@@ -860,6 +996,9 @@ def update_category_name():
 		return jsonify({'Success': True})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/ideatype_question', methods=['POST'])
 def ideatype_question():
@@ -874,6 +1013,9 @@ def ideatype_question():
 		return jsonify({'Success': True, 'question': question})
 	except Exception as e:
 		raise jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_session_ideas_in_categories', methods=['POST'])
 def get_session_ideas_in_categories():
@@ -905,6 +1047,9 @@ def get_session_ideas_in_categories():
 		return jsonify({'Success': True, 'categories': categories})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/set_voting_details', methods=['POST'])
 def set_voting_details():
@@ -927,6 +1072,9 @@ def set_voting_details():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_voting_details', methods=['POST'])
 def get_voting_details():
@@ -951,6 +1099,9 @@ def get_voting_details():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/getNumberOfParentIdeas', methods=['POST'])
 def getNumberOfParentIdeas():
@@ -970,6 +1121,9 @@ def getNumberOfParentIdeas():
 		return jsonify({'Success': True, 'parentIdeas': parentIdeas})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_parent_ideas', methods=['POST'])
 def get_parent_ideas():
@@ -997,6 +1151,9 @@ def get_parent_ideas():
 		return jsonify({'Success': True, 'ideasIDs': ideasIds, 'ideasText':ideasTexts, 'ideaSessionNumbers':ideaSessionNumbers})
 	except Exception as e:
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/save_vote', methods=['POST'])
 def save_vote():
@@ -1020,6 +1177,9 @@ def save_vote():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/get_voting_results', methods=['POST'])
 def get_voting_results():
@@ -1043,7 +1203,9 @@ def get_voting_results():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
-
+	finally:
+		cur.close()
+		connection.close()
 
 def processVotes(votes,votingScheme,ideasToVote):
 	voting_results = dict()
@@ -1109,6 +1271,9 @@ def reset_votes():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
+	finally:
+		cur.close()
+		connection.close()
 
 @app.route('/reset_voting_details', methods=['POST'])
 def reset_voting_details():
@@ -1127,7 +1292,9 @@ def reset_voting_details():
 	except Exception as e:
 		print(e)
 		return jsonify({'Error': str(e)})
-
+	finally:
+		cur.close()
+		connection.close()
 
 if __name__ == '__main__':
 	app.run(debug=True)
