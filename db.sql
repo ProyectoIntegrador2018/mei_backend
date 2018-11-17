@@ -37,7 +37,7 @@ CREATE TABLE Session (
 CREATE TABLE GeneralStructure (
     structureID INT AUTO_INCREMENT,
     sessionID INT UNIQUE,
-    levels JSON,
+    levels TEXT,
     PRIMARY KEY (structureID),
     FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
 );
@@ -140,7 +140,7 @@ CREATE TABLE PriorityQuestion (
 CREATE TABLE Priority (
     priorityID INT AUTO_INCREMENT,
     sessionID INT UNIQUE,
-    priorities JSON,
+    priorities TEXT,
     PRIMARY KEY (priorityID),
     FOREIGN KEY (sessionID) REFERENCES Session(sessionID)
 );
