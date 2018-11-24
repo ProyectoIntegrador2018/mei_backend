@@ -179,7 +179,7 @@ CREATE TABLE Votes (
     voteID INT AUTO_INCREMENT,
     session INT NOT NULL,
     ideaID INT NOT NULL,
-    participant VARCHAR(255) NOT NULL,
+    participant VARCHAR(255) NULL,
     ideaPriority INT,
     PRIMARY KEY (voteID)
 );

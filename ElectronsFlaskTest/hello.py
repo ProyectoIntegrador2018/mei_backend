@@ -1159,19 +1159,24 @@ def get_parent_ideas():
 def save_vote():
 	connection = mysql.connect()
 	cur = connection.cursor()
+	data = request.get_json()
 
-	print(request.form)
+	print(data)
 
-	session = request.form['sessionID']
-	ideaPriority = request.form['vote']
-	ideaID = request.form['ideaID']
-	participant = request.form['member']
+	session = data['sessionID']
+	votes = data['votes']
+	participant = data['member']
 
-	data = (session, ideaID, participant, ideaPriority)
 	insert_query = 'INSERT INTO Votes (session, ideaID, participant, ideaPriority) VALUES (%s, %s, %s, %s)'
 
 	try:
-		cur.execute(insert_query, data)
+		for i in range(len(votes)):
+			ideaID = votes[i]
+			ideaPriority = i + 1
+			data = (session, ideaID, participant, ideaPriority)
+			print(data)
+			cur.execute(insert_query, data)
+
 		connection.commit()
 		return jsonify({'Success': True})
 	except Exception as e:
