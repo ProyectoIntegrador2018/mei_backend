@@ -1,5 +1,7 @@
 # MEI - Sistema Inteligente (Backend)
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/2aa71d32953dd6748c0a/maintainability)](https://codeclimate.com/github/ProyectoIntegrador2018/mei_backend/maintainability)
+
 Desktop application to follow a process of collaborative teamwork and face-to-face dialogue following the Interpretative Structural Modeling algorithm by John Warfield.
 
 ## Table of contents
